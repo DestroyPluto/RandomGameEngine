@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.19)
 project(helloWorld)
 
 #TODO: implement this properly
-file(GLOB SOURCES "Source/*.cpp")
+file(GLOB SOURCES "Source/*.cpp"
+    "Source/*.c")
 
 #set the output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -16,6 +17,8 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} 
     PUBLIC
         ${PROJECT_SOURCE_DIR}/Include
+        ${PROJECT_SOURCE_DIR}/Include/glad
+        ${PROJECT_SOURCE_DIR}/Include/KHR
 )
 
 # Specify the path to GLFW
@@ -26,8 +29,11 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(${GLFW_DIR})
 
+add_subdirectory("${CMAKE_SOURCE_DIR}/Source/RenderingGL")
+
 find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} 
 glfw
-OpenGL::GL)
+OpenGL::GL
+)
 

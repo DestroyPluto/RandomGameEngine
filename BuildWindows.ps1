@@ -1,4 +1,8 @@
 
 #build the main project
-cmake -G "NMake Makefiles"  --fresh .
+cmake -G "NMake Makefiles" --fresh .
 NMake
+
+pushd "./Bin"
+.\helloWorld.exe
+popd
