@@ -19,6 +19,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Include
         ${PROJECT_SOURCE_DIR}/Include/glad
         ${PROJECT_SOURCE_DIR}/Include/KHR
+        ${CMAKE_SOURCE_DIR}/Include/RenderingGL
 )
 
 # Specify the path to GLFW
@@ -35,5 +36,6 @@ find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} 
 glfw
 OpenGL::GL
+RenderingGL
 )
 

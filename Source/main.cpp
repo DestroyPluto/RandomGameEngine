@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-//#include "RenderingGL/RenderingEngine.h"
+#include "RenderingGL/RenderingEngine.h"
 
-//using namespace rendering;
+using namespace rendering;
 
 void framebuffer_size_callback(GLFWwindow*, int32_t width, int32_t height){
     glViewport(0,0,width, height);
@@ -16,10 +16,10 @@ void processInput(GLFWwindow* window){
 
 int main(int args, char** argv){
 
-   // RenderingEngine engine = RenderingEngine();
-    //if(engine.initEngine()){
-     //   printf("It's Working!");
-    //}
+    RenderingEngine engine = RenderingEngine();
+    if(engine.initEngine()){
+        printf("It's Working!");
+    }
 
     //init glfw
     glfwInit();
