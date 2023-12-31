@@ -1,6 +1,6 @@
-build-job:
+build-linux-job:
   image: 192.168.1.17:5050/destroypluto/practiceproject:linux
-  stage: build-linux
+  stage: build
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
     - cmake --fresh .
@@ -11,7 +11,6 @@ build-job:
     expire_in: 30 days
     paths:
       - "/Bin/*"
-
 
 test-job1:
   stage: test
