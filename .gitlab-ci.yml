@@ -10,7 +10,7 @@ build-linux-job:
     when: on_success
     expire_in: 30 days
     paths:
-      - "/Bin/*"
+      - "Bin/*"
 
 test-job1:
   stage: test
