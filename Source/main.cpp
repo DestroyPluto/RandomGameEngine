@@ -1,9 +1,10 @@
 #include <stdio.h>
+#include <memory>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "RenderingGL/RenderingEngine.h"
 #include "Core/RenderingPlugin.h"
-#include <memory>
+
 
 using namespace core;
 using namespace rendering;
@@ -20,10 +21,12 @@ void processInput(GLFWwindow* window){
 int main(int args, char** argv){
 
     std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
-    if(engine->initPlugin()){
-        printf("It's Working!");
+    HgError err = engine->initPlugin();
+    if(err == HgError::eSuccess){
+        printf("It's Working!\n");
     }else{
-        printf("Something is wrong :/");
+        printf("Something is wrong :/\n");
+        printf("Error code: %i\n", err);
     }
 
     //init glfw
@@ -33,7 +36,7 @@ int main(int args, char** argv){
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     //create a window
-    GLFWwindow* window = glfwCreateWindow(800,600, "HelloWorld", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800,600, "Mercury", NULL, NULL);
 
     if(window == NULL){
         printf("Failed to create GLFW Window\n");

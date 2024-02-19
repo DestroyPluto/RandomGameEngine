@@ -1,15 +1,17 @@
 #include "RenderingEngine.h"
+#include "HgError.h"
 
 using namespace rendering;
+using namespace core;
 
-int32_t RenderingEngine::initPlugin() {
-    return -1;
+HgError RenderingEngine::initPlugin() {
+    return HgError::eNotImplemented;
 }
 
-int32_t RenderingEngine::setDirtyEntities(){
-    return -1;
+HgError RenderingEngine::setDirtyEntities(){
+    return HgError::eNotImplemented;
 }
 
-int32_t RenderingEngine::closePlugin(){
-    return -1;
+HgError RenderingEngine::closePlugin(){
+    return HgError::eNotImplemented;
 }

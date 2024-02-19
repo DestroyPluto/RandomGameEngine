@@ -6,10 +6,9 @@ namespace rendering {
 class RenderingEngine : core::RenderingPlugin{
 
 public:
-        virtual int32_t initPlugin() override;
-        virtual int32_t setDirtyEntities() override;
-        virtual int32_t closePlugin() override; 
-
+        virtual core::HgError initPlugin() override;
+        virtual core::HgError setDirtyEntities() override;
+        virtual core::HgError closePlugin() override; 
 };
 
 }
