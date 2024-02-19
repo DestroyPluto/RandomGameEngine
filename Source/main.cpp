@@ -2,7 +2,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "RenderingGL/RenderingEngine.h"
+#include "Core/RenderingPlugin.h"
+#include <memory>
 
+using namespace core;
 using namespace rendering;
 
 void framebuffer_size_callback(GLFWwindow*, int32_t width, int32_t height){
@@ -16,9 +19,11 @@ void processInput(GLFWwindow* window){
 
 int main(int args, char** argv){
 
-    RenderingEngine engine = RenderingEngine();
-    if(engine.initEngine()){
+    std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
+    if(engine->initPlugin()){
         printf("It's Working!");
+    }else{
+        printf("Something is wrong :/");
     }
 
     //init glfw
@@ -59,6 +64,8 @@ int main(int args, char** argv){
         glfwPollEvents();
     }
 
+    engine->closePlugin();
+    engine.reset();
     glfwTerminate();
     return 0;
 }

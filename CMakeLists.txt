@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-#TODO: create a better name lol
-project(helloWorld)
+project(Mercury)
 
 #TODO: implement this properly
 file(GLOB SOURCES "Source/*.cpp"
@@ -20,6 +19,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Include/glad
         ${PROJECT_SOURCE_DIR}/Include/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
+	${CMAKE_SOURCE_DIR}/Include/Core
 )
 
 # Specify the path to GLFW
@@ -31,11 +31,13 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${GLFW_DIR})
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/RenderingGL")
+add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Core")
 
 find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} 
 glfw
 OpenGL::GL
 RenderingGL
+Core
 )
 

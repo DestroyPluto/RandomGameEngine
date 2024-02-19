@@ -248,3 +248,5 @@ ThirdParty/glfw-3.3.8/src/CMakeFiles/update_mappings.dir/compiler_depend.make
 ThirdParty/glfw-3.3.8/src/CMakeFiles/update_mappings.dir/compiler_depend.ts
 ThirdParty/glfw-3.3.8/src/CMakeFiles/update_mappings.dir/DependInfo.cmake
 ThirdParty/glfw-3.3.8/src/CMakeFiles/update_mappings.dir/progress.make
+Bin
+/build

@@ -12,4 +12,5 @@ add_library(RenderingGL SHARED ${RENDERING_GL_SOURCES})
 target_include_directories(RenderingGL
     PUBLIC
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
+        ${CMAKE_SOURCE_DIR}/Include/Core
 )
