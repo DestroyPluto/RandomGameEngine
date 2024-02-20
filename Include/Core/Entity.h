@@ -1,15 +1,19 @@
 #pragma once
-#include <glm/glm.hpp>
 #include <glm/vec3.hpp>
+#include "Mesh.h"
 
 namespace core{
+
 class Entity{
+
     public:
-        Entity();
+        void setMesh(Mesh mesh){m_mesh = mesh;}
+        Mesh* getMesh(){return &m_mesh;}
     private:
-    //TODO: these should be vectors
         glm::vec3 m_position;
         glm::vec3 m_rotation;
         glm::vec3 m_scale;
+
+        Mesh m_mesh;
 };
 }
