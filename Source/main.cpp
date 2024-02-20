@@ -18,7 +18,7 @@ int main(int args, char** argv){
     std::thread renderingThread = engine->startPlugin();
 
     //Create a mesh of a basic square
-    Entity* ent = new Entity();
+    Entity* ent = new Entity(0);
     Mesh mesh = Mesh();
 
     float pointArray[] = {  -0.5, -0.5,
@@ -38,10 +38,13 @@ int main(int args, char** argv){
     dirtyEnts.push_back(ent);
 
     //send it to the rendering Engine
-    engine->setDirtyEntities(dirtyEnts);
+    HgError err = engine->setDirtyEntities(dirtyEnts);
+
+    if(err != HgError::eSuccess)
+        printf("Something went wrong setting the dirty Ents!\n err: %d\n", err);
 
     renderingThread.join();
-    printf("closing!");
+    printf("closing!\n");
     engine->closePlugin();
     engine.reset();
     return 0;

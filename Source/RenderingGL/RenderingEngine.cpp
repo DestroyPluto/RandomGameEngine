@@ -58,15 +58,41 @@ void RenderingEngine::renderloop(){
         //update buffers
         glfwSwapBuffers(m_window);
         glfwPollEvents();
-    }
 
+        //update entities for the next frame
+        handleDirtyEnts();
+    }
 }
 
-HgError RenderingEngine::setDirtyEntities(std::vector<Entity*> entities){
-    return HgError::eNotImplemented;
+HgError RenderingEngine::setDirtyEntities(std::vector<Entity*>& entities){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    m_dirtyEntities.insert(m_dirtyEntities.end(), entities.begin(), entities.end());
+    return HgError::eSuccess;
 }
 
 HgError RenderingEngine::closePlugin(){
     glfwTerminate();
-    return HgError::eNotImplemented;
+    return HgError::eSuccess;
+}
+
+void RenderingEngine::handleDirtyEnts(){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    //if we don't have anything to update, return early   
+    if(m_dirtyEntities.empty())
+        return;
+    for(Entity* ent : m_dirtyEntities){
+        
+        //check if we already have render commands for entity
+        if(m_renderCommands.contains(ent->getId())){
+            continue; //not implemented yet
+        }else{
+            //create a new render command for the entity
+            continue;
+        }
+        //reached the end, assume success, therefore it is no longer dirty
+        ent->setDirty(false);
+    }
+
+    //clear dirty ents
+    m_dirtyEntities.clear();
 }
