@@ -81,13 +81,14 @@ void RenderingEngine::handleDirtyEnts(){
     if(m_dirtyEntities.empty())
         return;
     for(Entity* ent : m_dirtyEntities){
-        
         //check if we already have render commands for entity
         if(m_renderCommands.contains(ent->getId())){
             continue; //not implemented yet
         }else{
-            //create a new render command for the entity
-            continue;
+            HgError err = createRenderCommand(ent->getMesh());
+            //if it fails, try again next time lol
+            if(err != HgError::eSuccess)
+                continue;
         }
         //reached the end, assume success, therefore it is no longer dirty
         ent->setDirty(false);
@@ -95,4 +96,14 @@ void RenderingEngine::handleDirtyEnts(){
 
     //clear dirty ents
     m_dirtyEntities.clear();
+}
+
+HgError RenderingEngine::createRenderCommand(uint32_t id, Mesh* mesh){
+    
+    //create a render command
+    RenderCommand rc = RenderCommand();
+    //insert the rendercommand into the map
+    m_renderCommands.emplace(id, rc);
+
+    return HgError::eSuccess;
 }
