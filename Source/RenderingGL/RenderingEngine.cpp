@@ -85,7 +85,7 @@ void RenderingEngine::handleDirtyEnts(){
         if(m_renderCommands.contains(ent->getId())){
             continue; //not implemented yet
         }else{
-            HgError err = createRenderCommand(ent->getMesh());
+            HgError err = createRenderCommand(ent->getId(), ent->getMesh());
             //if it fails, try again next time lol
             if(err != HgError::eSuccess)
                 continue;
