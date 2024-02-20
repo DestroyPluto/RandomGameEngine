@@ -1,6 +1,7 @@
 #include "RenderingEngine.h"
 #include "HgError.h"
 
+
 using namespace rendering;
 using namespace core;
 
@@ -61,7 +62,7 @@ void RenderingEngine::renderloop(){
 
 }
 
-HgError RenderingEngine::setDirtyEntities(){
+HgError RenderingEngine::setDirtyEntities(std::vector<Entity*> entities){
     return HgError::eNotImplemented;
 }
 
