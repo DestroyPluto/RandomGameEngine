@@ -1,4 +1,6 @@
 #pragma once
+#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
 
 namespace core{
 class Entity{
@@ -6,8 +8,8 @@ class Entity{
         Entity();
     private:
     //TODO: these should be vectors
-        double m_position;
-        double m_rotation;
-        double m_scale;
+        glm::vec3 m_position;
+        glm::vec3 m_rotation;
+        glm::vec3 m_scale;
 };
 }
