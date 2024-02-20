@@ -1,14 +1,22 @@
 #pragma once
 #include <RenderingPlugin.h>
+#include <glad.h>
+#include <GLFW/glfw3.h>
 
 namespace rendering {
 
 class RenderingEngine : core::RenderingPlugin{
 
 public:
-        virtual core::HgError initPlugin() override;
+        virtual std::thread startPlugin() override ;
         virtual core::HgError setDirtyEntities() override;
-        virtual core::HgError closePlugin() override; 
+        virtual core::HgError closePlugin() override;
+protected: 
+        virtual core::HgError initPlugin() override;
+        void renderloop();
+
+private:
+    GLFWwindow* m_window;
 };
 
 }

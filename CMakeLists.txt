@@ -4,7 +4,8 @@ project(Mercury)
 
 #TODO: implement this properly
 file(GLOB SOURCES "Source/*.cpp"
-    "Source/*.c")
+    "Source/*.c"
+    )
 
 #set the output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -19,7 +20,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Include/glad
         ${PROJECT_SOURCE_DIR}/Include/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
-	${CMAKE_SOURCE_DIR}/Include/Core
+	    ${CMAKE_SOURCE_DIR}/Include/Core
 )
 
 # Specify the path to GLFW
@@ -36,7 +37,6 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Core")
 find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} 
 glfw
-OpenGL::GL
 RenderingGL
 Core
 )

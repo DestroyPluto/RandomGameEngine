@@ -4,5 +4,5 @@ cmake -G "NMake Makefiles" --fresh .
 NMake
 
 pushd "./Bin"
-.\helloWorld.exe
+.\Mercury.exe
 popd
