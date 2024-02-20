@@ -6,15 +6,15 @@ SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 project(RenderingGL)
 
 file (GLOB RENDERING_GL_SOURCES "*.cpp" 
-                                "${CMAKE_SOURCE_DIR}/Source/glad.c"
+                                "*.c"
                                 )
 
 add_library(RenderingGL SHARED ${RENDERING_GL_SOURCES})
 
 target_include_directories(RenderingGL
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/Include/glad
-        ${CMAKE_SOURCE_DIR}/Include/KHR
+        ${CMAKE_SOURCE_DIR}/Include/RenderingGL/glad
+        ${CMAKE_SOURCE_DIR}/Include/RenderingGL/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/Core 
 )

@@ -1,6 +1,6 @@
 #pragma once
 #include <RenderingPlugin.h>
-#include <glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace rendering {

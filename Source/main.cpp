@@ -11,11 +11,10 @@ using namespace rendering;
 
 
 int main(int args, char** argv){
-
+    
     std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
     std::thread renderingThread = engine->startPlugin();
 
-    
     renderingThread.join();
     printf("closing!");
     engine->closePlugin();
