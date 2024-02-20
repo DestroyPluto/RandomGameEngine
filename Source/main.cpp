@@ -15,8 +15,9 @@ int main(int args, char** argv){
     std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
     std::thread renderingThread = engine->startPlugin();
 
-    printf("closing!");
+    
     renderingThread.join();
+    printf("closing!");
     engine->closePlugin();
     engine.reset();
     return 0;
