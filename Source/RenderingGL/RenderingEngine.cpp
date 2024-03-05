@@ -83,7 +83,8 @@ void RenderingEngine::handleDirtyEnts(){
     for(Entity* ent : m_dirtyEntities){
         //check if we already have render commands for entity
         if(m_renderCommands.contains(ent->getId())){
-            continue; //not implemented yet
+            continue; //not implemented yet 
+            //there are two possible things that need updating: the geometry, or the coordinates (or both lol)
         }else{
             HgError err = createRenderCommand(ent->getId(), ent->getMesh());
             //if it fails, try again next time lol
@@ -98,12 +99,15 @@ void RenderingEngine::handleDirtyEnts(){
     m_dirtyEntities.clear();
 }
 
+//note: should this pass in ent instead of mesh? ent has position data...
 HgError RenderingEngine::createRenderCommand(uint32_t id, Mesh* mesh){
     
     //create a render command
-    RenderCommand rc = RenderCommand();
+    RenderCommand rc = RenderCommand(id, mesh);
+    
     //insert the rendercommand into the map
-    m_renderCommands.emplace(id, rc);
+    m_renderCommands.emplace(id, std::move(rc));
+    printf("Created Render Command! \n");
 
     return HgError::eSuccess;
 }

@@ -21,13 +21,13 @@ int main(int args, char** argv){
     Entity* ent = new Entity(0);
     Mesh mesh = Mesh();
 
-    float pointArray[] = {  -0.5, -0.5,
-                             0.5, -0.5,
-                             0.5,  0.5,
-                            -0.5,  0.5
+    float pointArray[] = {  -0.5, -0.5, 1.0,
+                             0.5, -0.5, 1.0,
+                             0.5,  0.5, 1.0,
+                            -0.5,  0.5, 1.0
                             };
 
-    std::vector<float> points = std::vector<float>(pointArray, pointArray + 8);
+    std::vector<float> points = std::vector<float>(pointArray, pointArray + 8); //TODO: [pont array type]
 
     mesh.setPoints(points, true);
 

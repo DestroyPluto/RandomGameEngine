@@ -29,7 +29,7 @@ private:
     std::vector<core::Entity*> m_dirtyEntities;
     std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
 
-    HgError createRenderCommand(uint32_t id, Mesh* mesh);
+    core::HgError createRenderCommand(uint32_t id, core::Mesh* mesh);
 };
 
 }
