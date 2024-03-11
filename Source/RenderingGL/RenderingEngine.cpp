@@ -59,6 +59,11 @@ void RenderingEngine::renderloop(){
         glClearColor(0.2f,0.3f,0.3f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //geometry pass - should probably move this into it's own thing.
+        for(auto rc = m_renderCommands.begin(); rc != m_renderCommands.end(); rc++){
+            rc->second.execute();
+        }
+
         //update buffers
         glfwSwapBuffers(m_window);
         glfwPollEvents();

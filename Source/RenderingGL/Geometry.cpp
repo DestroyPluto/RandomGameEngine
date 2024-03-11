@@ -13,6 +13,8 @@ void Geometry::addAttribute(Attribute attrib, std::vector<float> attribData){
     
     //could possibly change this to a switch statement?
   //  if(attrib == aVertex){
+        m_vertexCount = attribData.size(); //TODO magic numbers :/
+
         glBindVertexArray(m_vaoId);
         
         unsigned int VBO;
@@ -22,5 +24,11 @@ void Geometry::addAttribute(Attribute attrib, std::vector<float> attribData){
     
         glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(attrib);
+        glBindVertexArray(0); //reset state
   //  }
+}
+
+void Geometry::drawGeometry(){
+  glBindVertexArray(m_vaoId);
+  glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
 }
