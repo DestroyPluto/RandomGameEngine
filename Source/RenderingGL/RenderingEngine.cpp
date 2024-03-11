@@ -1,5 +1,6 @@
 #include "RenderingEngine.h"
 #include "HgError.h"
+#include "Shader.h"
 
 
 using namespace rendering;
@@ -40,6 +41,9 @@ HgError RenderingEngine::initPlugin() {
 
     glViewport(0,0,800,600);
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
+
+    Shader* basicShader = new Shader("../Source/RenderingGL/Shaders/vertex.vs", "../Source/RenderingGL/Shaders/fragment.fs");
+    basicShader->bind();
 
     renderloop();
 
