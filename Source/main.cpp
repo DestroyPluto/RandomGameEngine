@@ -30,7 +30,7 @@ int main(int args, char** argv){
                             -0.5,  0.5, 1.0 //4
                             };
 
-    std::vector<float> points = std::vector<float>(pointArray, pointArray + 8); //TODO: [pont array type]
+    std::vector<float> points = std::vector<float>(pointArray, pointArray + 18); //TODO: [pont array type]
 
     mesh.setPoints(points, true);
 
