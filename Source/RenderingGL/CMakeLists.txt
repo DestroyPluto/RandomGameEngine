@@ -17,7 +17,7 @@ target_include_directories(RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/Core 
-	${CMAKE_SOURCE_DIR}/Include/Math 
+	    ${CMAKE_SOURCE_DIR}/Include/Math 
 )
 
 find_package( OpenGL REQUIRED)
@@ -25,4 +25,5 @@ find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}
 glfw
 OpenGL::GL
+Math
 )

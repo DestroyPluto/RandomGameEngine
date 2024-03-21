@@ -7,10 +7,12 @@
 #include "Core/RenderingPlugin.h"
 #include "Core/Entity.h"
 #include "Core/Mesh.h"
+#include "Math/PointArray.h"
+
 
 using namespace core;
 using namespace rendering;
-
+using namespace math;
 
 int main(int args, char** argv){
 
@@ -21,16 +23,20 @@ int main(int args, char** argv){
     Entity* ent = new Entity(0);
     Mesh mesh = Mesh();
 
-    float pointArray[] = {  -0.5, -0.5, 1.0, //1
-                             0.5, -0.5, 1.0, //2
-                             0.5,  0.5, 1.0, //3
+    Point one = Point(-0.5, -0.5, 1.0);
+    Point two = Point(0.5, -0.5, 1.0);
+    Point three = Point(0.5,  0.5, 1.0);
+    Point four = Point(-0.5,  0.5, 1.0);
 
-                            -0.5, -0.5, 1.0, //1
-                             0.5,  0.5, 1.0, //3
-                            -0.5,  0.5, 1.0 //4
-                            };
+    PointArray points = PointArray();
+    //TODO: must be a better way of doing this.
+    points.push_back(one);
+    points.push_back(two);
+    points.push_back(three);
 
-    std::vector<float> points = std::vector<float>(pointArray, pointArray + 18); //TODO: [pont array type]
+    points.push_back(one);
+    points.push_back(three);
+    points.push_back(four);
 
     mesh.setPoints(points, true);
 

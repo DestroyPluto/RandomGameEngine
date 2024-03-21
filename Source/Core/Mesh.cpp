@@ -1,9 +1,11 @@
 #include "Mesh.h"
 
 using namespace core;
+using namespace math;
 
-HgError Mesh::setPoints(std::vector<float> points, bool bIs2D){
+HgError Mesh::setPoints(PointArray points, bool b2D){
     m_points = points;
-    m_b2D = bIs2D;
+    m_b2D = b2D;
+ 
     return HgError::eSuccess;
 }

@@ -2,18 +2,18 @@
 #include <vector>
 #include <glm/vec3.hpp>
 #include "HgError.h"
-
+#include "PointArray.h"
 namespace core{
 
 class Mesh{
 
 public:
-    HgError setPoints(std::vector<float> points, bool bIs2D);
-    std::vector<float> getPoints(){return m_points;}
+    HgError setPoints(math::PointArray points, bool b2D);
+    math::PointArray getPoints(){return m_points;}
     bool is2D(){return m_b2D;}
 
 private:
-    std::vector<float> m_points;
+    math::PointArray m_points;
     bool m_b2D;
 };
 }
