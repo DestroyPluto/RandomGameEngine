@@ -17,6 +17,7 @@ target_include_directories(RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/Core 
+	${CMAKE_SOURCE_DIR}/Include/Math 
 )
 
 find_package( OpenGL REQUIRED)

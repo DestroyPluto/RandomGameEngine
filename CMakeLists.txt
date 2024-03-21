@@ -21,6 +21,8 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Include/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
 	    ${CMAKE_SOURCE_DIR}/Include/Core
+	    ${CMAKE_SOURCE_DIR}/Include/Math
+
 )
 
 # Specify the path to GLFW
@@ -33,11 +35,13 @@ add_subdirectory(${GLFW_DIR})
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/RenderingGL")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Core")
+add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Math")
 
 find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} 
 glfw
 RenderingGL
 Core
+Math
 )
 
