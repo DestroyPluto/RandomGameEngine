@@ -5,7 +5,9 @@ class Point{
 public:
     Point(float x, float y, float z);
     Point(double x, double y, double z);
+    Point() = delete;
     
+
     double X(){return m_x;}
     double Y(){return m_y;}
     double Z(){return m_z;}
