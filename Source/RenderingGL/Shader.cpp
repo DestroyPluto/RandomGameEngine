@@ -88,22 +88,26 @@ void Shader::bind(){
     glUseProgram(m_id);
 }
 
-template<>
-void Shader::setUniform(Shader::eUniformName name, float data){
-    glUniform1f(glGetUniformLocation(m_id, m_locations[name].c_str()), data);
+void Shader::unBind(){
+    glUseProgram(0);
 }
 
 template<>
-void Shader::setUniform(Shader::eUniformName name, glm::vec3 data){
-    glUniform3fv(glGetUniformLocation(m_id, m_locations[name].c_str()), 1, glm::value_ptr(data));
+void Shader::setUniform(std::string name, float data){
+    glUniform1f(glGetUniformLocation(m_id, name.c_str()), data);
 }
 
 template<>
-void Shader::setUniform(Shader::eUniformName name, glm::mat4 data){
-    glUniformMatrix4fv(glGetUniformLocation(m_id, m_locations[name].c_str()), 1, GL_FALSE, glm::value_ptr(data));
+void Shader::setUniform(std::string name, glm::vec3 data){
+    glUniform3fv(glGetUniformLocation(m_id, name.c_str()), 1, glm::value_ptr(data));
 }
 
 template<>
-void Shader::setUniform(Shader::eUniformName name, glm::mat3 data){
-    glUniformMatrix3fv(glGetUniformLocation(m_id, m_locations[name].c_str()), 1, GL_FALSE, glm::value_ptr(data));
+void Shader::setUniform(std::string name, glm::mat4 data){
+    glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
+}
+
+template<>
+void Shader::setUniform(std::string name, glm::mat3 data){
+    glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
