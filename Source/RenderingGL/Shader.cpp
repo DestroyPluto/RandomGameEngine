@@ -3,6 +3,9 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <glm/vec3.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 using namespace rendering;
 
@@ -83,4 +86,24 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
 
 void Shader::bind(){
     glUseProgram(m_id);
+}
+
+template<>
+void Shader::setUniform(Shader::eUniformName name, float data){
+    glUniform1f(glGetUniformLocation(m_id, m_locations[name].c_str()), data);
+}
+
+template<>
+void Shader::setUniform(Shader::eUniformName name, glm::vec3 data){
+    glUniform3fv(glGetUniformLocation(m_id, m_locations[name].c_str()), 1, glm::value_ptr(data));
+}
+
+template<>
+void Shader::setUniform(Shader::eUniformName name, glm::mat4 data){
+    glUniformMatrix4fv(glGetUniformLocation(m_id, m_locations[name].c_str()), 1, GL_FALSE, glm::value_ptr(data));
+}
+
+template<>
+void Shader::setUniform(Shader::eUniformName name, glm::mat3 data){
+    glUniformMatrix3fv(glGetUniformLocation(m_id, m_locations[name].c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
