@@ -14,3 +14,9 @@ Point::Point(float x, float y, float z){
     m_y = (double)y;
     m_z = (double)z;
 }
+
+Point::Point(double x, double y){
+    m_x = x;
+    m_y = y;
+    m_is2D = true;
+}

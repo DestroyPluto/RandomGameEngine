@@ -22,6 +22,8 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
 	    ${CMAKE_SOURCE_DIR}/Include/Core
 	    ${CMAKE_SOURCE_DIR}/Include/Math
+        ${CMAKE_SOURCE_DIR}/Include/IO
+        
 
 )
 
@@ -36,6 +38,8 @@ add_subdirectory(${GLFW_DIR})
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/RenderingGL")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Core")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Math")
+add_subdirectory("${CMAKE_SOURCE_DIR}/Source/IO")
+
 
 find_package( OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} 
@@ -43,5 +47,6 @@ glfw
 RenderingGL
 Core
 Math
+IO
 )
 

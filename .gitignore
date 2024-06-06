@@ -18,3 +18,4 @@ Source/Core/Core.lib
 Source/vc140.pdb
 *.lib
 **/CMakeFiles/*
+Source/Core/Core.lib

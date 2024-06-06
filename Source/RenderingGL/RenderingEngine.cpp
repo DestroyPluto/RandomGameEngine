@@ -46,7 +46,7 @@ HgError RenderingEngine::initPlugin() {
     BasicShader* basicShader = new BasicShader();
     basicShader->bind();
     
-    //basicShader->setColour(0.5f,0.0f,0.0f);
+    basicShader->setColour(0.5f,0.0f,0.0f);
     
     renderloop();
 
