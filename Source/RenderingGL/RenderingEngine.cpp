@@ -20,6 +20,12 @@ std::thread RenderingEngine::startPlugin(){
     return std::thread(&RenderingEngine::initPlugin, this);
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    RenderingEngine* renderingEngine = static_cast<RenderingEngine*>(glfwGetWindowUserPointer(window));
+    assert(renderingEngine->m_keyCallback); //if no key callback is set, then we should fail
+    renderingEngine->m_keyCallback(key, action); 
+}
+
 HgError RenderingEngine::initPlugin() {
 
     //init glfw
@@ -39,9 +45,10 @@ HgError RenderingEngine::initPlugin() {
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
         return HgError::eFailure;
     }
-
+    glfwSetWindowUserPointer(m_window, this);
     glViewport(0,0,800,600);
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
+    glfwSetKeyCallback(m_window, key_callback);
 
     BasicShader* basicShader = new BasicShader();
     basicShader->bind();

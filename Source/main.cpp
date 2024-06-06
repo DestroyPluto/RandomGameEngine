@@ -14,9 +14,14 @@ using namespace core;
 using namespace rendering;
 using namespace math;
 
+void key_callback(int key, int action){
+    printf("key callback called!\n");
+}
+
 int main(int args, char** argv){
 
     std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
+    engine->m_keyCallback = &key_callback;
     std::thread renderingThread = engine->startPlugin();
 
     //Create a mesh of a basic square

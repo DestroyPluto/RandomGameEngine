@@ -5,6 +5,7 @@
 #include <vector>
 #include <mutex>
 #include <unordered_map>
+#include <functional>
 
 #include "RenderCommand.h"
 #include "Entity.h"
@@ -17,6 +18,8 @@ public:
         virtual std::thread startPlugin() override;
         virtual core::HgError setDirtyEntities(std::vector<core::Entity*>& entities) override;
         virtual core::HgError closePlugin() override;
+        std::function<void (int, int)> m_keyCallback;
+
         
 protected: 
         virtual core::HgError initPlugin() override;
