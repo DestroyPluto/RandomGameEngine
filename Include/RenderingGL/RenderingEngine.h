@@ -10,29 +10,28 @@
 #include "RenderCommand.h"
 #include "Entity.h"
 
-namespace rendering {
+namespace rendering
+{
+	class RenderingEngine : core::RenderingPlugin
+	{
 
-class RenderingEngine : core::RenderingPlugin{
+	public:
+		virtual std::thread startPlugin() override;
+		virtual core::HgError setDirtyEntities(std::vector<core::Entity *> &entities) override;
+		virtual core::HgError closePlugin() override;
+		std::function<void(int, int)> m_keyCallback;
 
-public:
-        virtual std::thread startPlugin() override;
-        virtual core::HgError setDirtyEntities(std::vector<core::Entity*>& entities) override;
-        virtual core::HgError closePlugin() override;
-        std::function<void (int, int)> m_keyCallback;
+	protected:
+		virtual core::HgError initPlugin() override;
+		void renderloop();
+		void handleDirtyEnts();
 
-        
-protected: 
-        virtual core::HgError initPlugin() override;
-        void renderloop();
-        void handleDirtyEnts();
-
-private:
-    GLFWwindow* m_window;
-    std::mutex m_RenderingMutex;
-    std::vector<core::Entity*> m_dirtyEntities;
-    std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
-
-    core::HgError createRenderCommand(uint32_t id, core::Mesh* mesh);
-};
+	private:
+		GLFWwindow *m_window;
+		std::mutex m_RenderingMutex;
+		std::vector<core::Entity *> m_dirtyEntities;
+		std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
+		core::HgError createRenderCommand(uint32_t id, core::Mesh *mesh);
+	};
 
 }

@@ -16,3 +16,15 @@ void BasicShader::setColour(float r, float g, float b){
 
     setUniform<glm::vec3>("inColour", rgb);
 }
+
+void BasicShader::setProjectionMatrix(glm::mat4 proj){
+    setUniform<glm::mat4>("projection", proj);
+}
+
+void BasicShader::setModelMatrix(glm::mat4 model){
+    setUniform<glm::mat4>("model", model);
+}
+
+void BasicShader::setViewMatrix(glm::mat4 view){
+    setUniform<glm::mat4>("view", view);
+}

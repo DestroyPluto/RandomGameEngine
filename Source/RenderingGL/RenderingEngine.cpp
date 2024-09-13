@@ -2,7 +2,8 @@
 #include "HgError.h"
 #include "BasicShader.h"
 #include "Shader.h"
-
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
 
 using namespace rendering;
 using namespace core;
@@ -54,7 +55,16 @@ HgError RenderingEngine::initPlugin() {
     basicShader->bind();
     
     basicShader->setColour(0.5f,0.0f,0.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f,0.0f,-7.0f));
+    model = glm::scale(model, glm::vec3(1.0f,1.0f,0.0f));
     
+    //glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::mat4(1.0f);
+    basicShader->setViewMatrix(view);
+    basicShader->setModelMatrix(model);
+    basicShader->setProjectionMatrix(glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 500.0f));
+    //basicShader->setProjectionMatrix(glm::mat4(1.0f));
     renderloop();
 
     return HgError::eSuccess;
