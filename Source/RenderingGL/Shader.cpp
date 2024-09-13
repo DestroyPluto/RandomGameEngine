@@ -111,3 +111,15 @@ template<>
 void Shader::setUniform(std::string name, glm::mat3 data){
     glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
+
+void Shader::setProjectionMatrix(glm::mat4 proj){
+    setUniform<glm::mat4>("projection", proj);
+}
+
+void Shader::setModelMatrix(glm::mat4 model){
+    setUniform<glm::mat4>("model", model);
+}
+
+void Shader::setViewMatrix(glm::mat4 view){
+    setUniform<glm::mat4>("view", view);
+}

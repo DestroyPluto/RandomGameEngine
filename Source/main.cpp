@@ -61,5 +61,8 @@ int main(int args, char** argv){
     printf("closing!\n");
     engine->closePlugin();
     engine.reset();
+
+    delete ent;
+
     return 0;
 }

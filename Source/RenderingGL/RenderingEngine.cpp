@@ -51,20 +51,16 @@ HgError RenderingEngine::initPlugin() {
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     glfwSetKeyCallback(m_window, key_callback);
 
-    BasicShader* basicShader = new BasicShader();
-    basicShader->bind();
+    m_basicShader = new BasicShader();
+    m_basicShader->bind();
     
-    basicShader->setColour(0.5f,0.0f,0.0f);
+    m_basicShader->setColour(0.5f,0.0f,0.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f,0.0f,-7.0f));
-    model = glm::scale(model, glm::vec3(1.0f,1.0f,0.0f));
-    
-    //glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 view = glm::mat4(1.0f);
-    basicShader->setViewMatrix(view);
-    basicShader->setModelMatrix(model);
-    basicShader->setProjectionMatrix(glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 500.0f));
-    //basicShader->setProjectionMatrix(glm::mat4(1.0f));
+    view = glm::translate(view, glm::vec3(0.0f,0.0f,-7.0f));
+    m_basicShader->setViewMatrix(view);
+    m_basicShader->setModelMatrix(model);
+    m_basicShader->setProjectionMatrix(glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 500.0f));
     renderloop();
 
     return HgError::eSuccess;
@@ -80,8 +76,9 @@ void RenderingEngine::renderloop(){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //geometry pass - should probably move this into it's own thing.
+        //should also have a different pass for each shader type.
         for(auto rc = m_renderCommands.begin(); rc != m_renderCommands.end(); rc++){
-            rc->second.execute();
+            rc->second.execute(m_basicShader);
         }
 
         //update buffers
@@ -112,14 +109,16 @@ void RenderingEngine::handleDirtyEnts(){
     for(Entity* ent : m_dirtyEntities){
         //check if we already have render commands for entity
         if(m_renderCommands.contains(ent->getId())){
-            continue; //not implemented yet 
             //there are two possible things that need updating: the geometry, or the coordinates (or both lol)
+            //currently only updates the coords
+            updateRenderCommand(ent);
         }else{
-            HgError err = createRenderCommand(ent->getId(), ent->getMesh());
+            HgError err = createRenderCommand(ent);
             //if it fails, try again next time lol
             if(err != HgError::eSuccess)
                 continue;
         }
+
         //reached the end, assume success, therefore it is no longer dirty
         ent->setDirty(false);
     }
@@ -128,14 +127,23 @@ void RenderingEngine::handleDirtyEnts(){
     m_dirtyEntities.clear();
 }
 
+HgError RenderingEngine::updateRenderCommand(Entity* ent){
+    auto index = m_renderCommands.find(ent->getId());
+    if(index != m_renderCommands.end()){
+        RenderCommand* rc = &(index->second);
+        rc->updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
+        return HgError::eSuccess;
+    }
+    return HgError::eFailure;
+}
+
 //note: should this pass in ent instead of mesh? ent has position data...
-HgError RenderingEngine::createRenderCommand(uint32_t id, Mesh* mesh){
-    
+HgError RenderingEngine::createRenderCommand(Entity* ent){
     //create a render command
-    RenderCommand rc = RenderCommand(id, mesh);
-    
+    RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh());
+    rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
     //insert the rendercommand into the map
-    m_renderCommands.emplace(id, std::move(rc));
+    m_renderCommands.emplace(ent->getId(), std::move(rc));
     printf("Created Render Command! \n");
 
     return HgError::eSuccess;

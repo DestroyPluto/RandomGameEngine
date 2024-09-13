@@ -9,6 +9,7 @@
 
 #include "RenderCommand.h"
 #include "Entity.h"
+#include "BasicShader.h"
 
 namespace rendering
 {
@@ -31,7 +32,11 @@ namespace rendering
 		std::mutex m_RenderingMutex;
 		std::vector<core::Entity *> m_dirtyEntities;
 		std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
-		core::HgError createRenderCommand(uint32_t id, core::Mesh *mesh);
+		core::HgError createRenderCommand(core::Entity*);
+		core::HgError updateRenderCommand(core::Entity*);
+
+		//TODO: better solution for handling shaders
+		BasicShader* m_basicShader;
 	};
 
 }
