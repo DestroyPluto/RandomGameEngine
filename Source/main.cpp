@@ -8,14 +8,15 @@
 #include "Core/Entity.h"
 #include "Core/Mesh.h"
 #include "Math/PointArray.h"
-
+#include "IO/Keyboard.h"
 
 using namespace core;
 using namespace rendering;
 using namespace math;
+using namespace io;
 
 void key_callback(int key, int action){
-    printf("key callback called!\n");
+    Keyboard::getInstance()->setKey(key, action);
 }
 
 int main(int args, char** argv){
@@ -56,6 +57,16 @@ int main(int args, char** argv){
 
     if(err != HgError::eSuccess)
         printf("Something went wrong setting the dirty Ents!\n err: %d\n", err);
+
+    bool shouldEnd = false;
+
+    while(!shouldEnd){
+        Keyboard* keyboard = Keyboard::getInstance();
+
+        shouldEnd = keyboard->isKeyDown(Keyboard::KEY_SPACE);
+
+        printf("main game loop! \n");
+    }
 
     renderingThread.join();
     printf("closing!\n");
