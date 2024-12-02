@@ -21,14 +21,15 @@ class Entity{
         glm::vec3 getPosition(){return m_position;}
         glm::vec3 getRotation(){return m_rotation;}
         glm::vec3 getScale(){return m_scale;}
-        
-
+    
+    protected:
+        Mesh m_mesh;
+    
     private:
         glm::vec3 m_position;
         glm::vec3 m_rotation;
         glm::vec3 m_scale;
 
-        Mesh m_mesh;
         uint32_t m_id;
         bool m_isDirty;
 };

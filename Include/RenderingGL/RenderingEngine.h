@@ -21,6 +21,7 @@ namespace rendering
 		virtual core::HgError setDirtyEntities(std::vector<core::Entity *> &entities) override;
 		virtual core::HgError closePlugin() override;
 		std::function<void(int, int)> m_keyCallback;
+		std::function<void(double, double)> m_mouseCallback;
 
 	protected:
 		virtual core::HgError initPlugin() override;

@@ -9,6 +9,8 @@
 #include "Core/Mesh.h"
 #include "Math/PointArray.h"
 #include "IO/Keyboard.h"
+#include "IO/Mouse.h"
+#include "core/Button.cpp"
 
 using namespace core;
 using namespace rendering;
@@ -19,38 +21,27 @@ void key_callback(int key, int action){
     Keyboard::getInstance()->setKey(key, action);
 }
 
+void mouse_callback(double xpos, double ypos){
+    Mouse::getInstance()->setPos(xpos, ypos);
+}
+
 int main(int args, char** argv){
 
     std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
     engine->m_keyCallback = &key_callback;
+    engine->m_mouseCallback = & mouse_callback;
     std::thread renderingThread = engine->startPlugin();
 
     //Create a mesh of a basic square
-    Entity* ent = new Entity(0);
-    Mesh mesh = Mesh();
+    //Entity* ent = new Entity(0);
+    //Button* button = new Button(0);
+    std::unique_ptr<Button> button = std::make_unique<Button>(0);
 
-    Point one = Point(-0.5, -0.5, 1.0);
-    Point two = Point(0.5, -0.5, 1.0);
-    Point three = Point(0.5,  0.5, 1.0);
-    Point four = Point(-0.5,  0.5, 1.0);
-
-    PointArray points = PointArray();
-    //TODO: must be a better way of doing this.
-    points.push_back(one);
-    points.push_back(two);
-    points.push_back(three);
-
-    points.push_back(one);
-    points.push_back(three);
-    points.push_back(four);
-
-    mesh.setPoints(points, true);
-
-    ent->setMesh(mesh);
+    button->setPosition({1,1,0});
 
     std::vector<Entity*> dirtyEnts = std::vector<Entity*>();
 
-    dirtyEnts.push_back(ent);
+    dirtyEnts.push_back(button.get());
 
     //send it to the rendering Engine
     HgError err = engine->setDirtyEntities(dirtyEnts);
@@ -63,9 +54,14 @@ int main(int args, char** argv){
     while(!shouldEnd){
         Keyboard* keyboard = Keyboard::getInstance();
 
-        shouldEnd = keyboard->isKeyDown(Keyboard::KEY_SPACE);
+        shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
 
-        printf("main game loop! \n");
+        if(keyboard->isKeyDown(Keyboard::KEY_W)){
+            double x;
+            double y;
+            Mouse::getInstance()->getScreenPos(x, y);
+            printf("Mouse pos: %lf, %lf \n", x, y);
+        }
     }
 
     renderingThread.join();
@@ -73,7 +69,8 @@ int main(int args, char** argv){
     engine->closePlugin();
     engine.reset();
 
-    delete ent;
+    //delete ent;
+    
 
     return 0;
 }

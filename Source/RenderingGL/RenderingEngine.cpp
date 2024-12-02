@@ -27,6 +27,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     renderingEngine->m_keyCallback(key, action); 
 }
 
+
+void mouse_callback(GLFWwindow* window, double xPos, double yPos){
+    RenderingEngine* renderingEngine = static_cast<RenderingEngine*>(glfwGetWindowUserPointer(window));
+    assert(renderingEngine->m_mouseCallback); //if no key callback is set, then we should fail
+    renderingEngine->m_mouseCallback(xPos, yPos); 
+}
+
 HgError RenderingEngine::initPlugin() {
 
     //init glfw
@@ -50,6 +57,7 @@ HgError RenderingEngine::initPlugin() {
     glViewport(0,0,800,600);
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     glfwSetKeyCallback(m_window, key_callback);
+    glfwSetCursorPosCallback(m_window, mouse_callback);
 
     m_basicShader = new BasicShader();
     m_basicShader->bind();
@@ -88,6 +96,8 @@ void RenderingEngine::renderloop(){
         //update entities for the next frame
         handleDirtyEnts();
     }
+    //make sure to tell the main thread we are exiting
+    m_keyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS);
 }
 
 HgError RenderingEngine::setDirtyEntities(std::vector<Entity*>& entities){
