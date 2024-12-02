@@ -12,11 +12,19 @@ class RenderingPlugin{
         /**
          * starts a thread that inits the rendering engine and starts the render loop.
         */
+       
         virtual std::thread startPlugin() = 0;
         /**
          * Note: entities is not owned by the rendering plugin. the relevent info is copied over only.
         */
+
         virtual HgError setDirtyEntities(std::vector<Entity*>& entities) = 0;
+        /**
+         * load a texture/image into the rendering image
+         * [out] id - the image/texture ID
+         */
+        virtual HgError addTexture(const void* data, const size_t width, const size_t height, uint32_t& id) = 0;
+
         /**
          * clean up any rendering resources.
         */

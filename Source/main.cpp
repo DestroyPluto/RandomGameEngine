@@ -11,6 +11,7 @@
 #include "IO/Keyboard.h"
 #include "IO/Mouse.h"
 #include "core/Button.cpp"
+#include "IO/PNGLoader.h"
 
 using namespace core;
 using namespace rendering;
@@ -51,16 +52,27 @@ int main(int args, char** argv){
 
     bool shouldEnd = false;
 
-    while(!shouldEnd){
-        Keyboard* keyboard = Keyboard::getInstance();
+    //initialize png loader, and load file.
+    uint32_t fileIndex = 0;
+    PNGLoader loader((RenderingPlugin*)engine.get());
+   
+    Keyboard* keyboard = Keyboard::getInstance();
+    
+    bool texturesLoaded = false;
 
+    while(!shouldEnd){
+        if(engine->isInitialized() && !texturesLoaded){
+            loader.loadFromFile("redChecker.png", fileIndex);
+            uint32_t id;
+            loader.loadFromFile("redChecker.png", id);
+            printf("out ID: %u\n", id);
+
+            texturesLoaded = true;
+        }
         shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
 
         if(keyboard->isKeyDown(Keyboard::KEY_W)){
-            double x;
-            double y;
-            Mouse::getInstance()->getScreenPos(x, y);
-            printf("Mouse pos: %lf, %lf \n", x, y);
+
         }
     }
 

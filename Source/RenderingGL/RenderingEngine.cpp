@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
+#include "glad/glad.h"
 
 using namespace rendering;
 using namespace core;
@@ -35,7 +36,6 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos){
 }
 
 HgError RenderingEngine::initPlugin() {
-
     //init glfw
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -69,6 +69,7 @@ HgError RenderingEngine::initPlugin() {
     m_basicShader->setViewMatrix(view);
     m_basicShader->setModelMatrix(model);
     m_basicShader->setProjectionMatrix(glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 500.0f));
+    m_isInitialized = true;
     renderloop();
 
     return HgError::eSuccess;
@@ -155,6 +156,24 @@ HgError RenderingEngine::createRenderCommand(Entity* ent){
     //insert the rendercommand into the map
     m_renderCommands.emplace(ent->getId(), std::move(rc));
     printf("Created Render Command! \n");
+
+    return HgError::eSuccess;
+}
+
+//NOTE: should this be similar to dirty ents? copy the data to the thread and then deal with it later?
+//(yes - can only be called after everything is properly initialized, which won't happen if called outside
+//the thread before it is ready)
+//TODO: better storage of textures
+//and only store unique textures.
+HgError RenderingEngine::addTexture(const void* data, const size_t width, const size_t height, uint32_t& id){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    printf("generating texture ID!\n");
+    glGenTextures(1, &id);
+    printf("Texture ID: %u\n", id);
+    glBindTexture(GL_TEXTURE_2D, id);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     return HgError::eSuccess;
 }

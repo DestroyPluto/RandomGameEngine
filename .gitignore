@@ -9,7 +9,7 @@ Source/RenderingGL/Makefile
 Source/RenderingGL/RenderingGL.exp
 Source/RenderingGL/RenderingGL.lib
 Source/RenderingGL/CMakeFiles/*
-ThirdParty/glfw-3.3.8/*
+ThirdParty/*
 Bin/*
 build/*
 Source/Core/CMakeFiles/*
