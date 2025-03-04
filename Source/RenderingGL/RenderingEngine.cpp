@@ -28,7 +28,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     renderingEngine->m_keyCallback(key, action); 
 }
 
-
 void mouse_callback(GLFWwindow* window, double xPos, double yPos){
     RenderingEngine* renderingEngine = static_cast<RenderingEngine*>(glfwGetWindowUserPointer(window));
     assert(renderingEngine->m_mouseCallback); //if no key callback is set, then we should fail
@@ -58,6 +57,7 @@ HgError RenderingEngine::initPlugin() {
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     glfwSetKeyCallback(m_window, key_callback);
     glfwSetCursorPosCallback(m_window, mouse_callback);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
     m_basicShader = new BasicShader();
     m_basicShader->bind();
@@ -76,6 +76,7 @@ HgError RenderingEngine::initPlugin() {
 }
 
 void RenderingEngine::renderloop(){
+
      while(!glfwWindowShouldClose(m_window)){
         //get input
         processInput(m_window);
@@ -96,6 +97,10 @@ void RenderingEngine::renderloop(){
 
         //update entities for the next frame
         handleDirtyEnts();
+
+        //load any textures
+        handleDirtyTextures();
+
     }
     //make sure to tell the main thread we are exiting
     m_keyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS);
@@ -103,7 +108,21 @@ void RenderingEngine::renderloop(){
 
 HgError RenderingEngine::setDirtyEntities(std::vector<Entity*>& entities){
     std::lock_guard<std::mutex>lock(m_RenderingMutex);
-    m_dirtyEntities.insert(m_dirtyEntities.end(), entities.begin(), entities.end());
+
+    for(Entity* ent : entities){
+        m_dirtyEntities.insert(ent);
+    }
+    return HgError::eSuccess;
+}
+
+//NOTE: should this be similar to dirty ents? copy the data to the thread and then deal with it later?
+//(yes - can only be called after everything is properly initialized, which won't happen if called outside
+//the thread before it is ready)
+//TODO: better storage of textures
+//and only store unique textures.
+HgError RenderingEngine::addTexture(HgTexture* texture) {
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+        m_dirtyTextures.insert(texture);
     return HgError::eSuccess;
 }
 
@@ -138,11 +157,44 @@ void RenderingEngine::handleDirtyEnts(){
     m_dirtyEntities.clear();
 }
 
+
+void RenderingEngine::handleDirtyTextures(){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    if(m_dirtyTextures.empty())
+        return;
+
+    unsigned int id;
+        
+    for(HgTexture* tex : m_dirtyTextures){
+        //if there is already a texture, then it has already been loaded.
+        if(tex->getId() == 0){        
+            glGenTextures(1, &id);
+            tex->setId(id);
+        }else{
+            id = tex->getId();
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        //TODO: configure num channels correctly - currently assume RGBA, but that might not neccessarialy be the case.
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->getWidth(), tex->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->getData());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        //either update or insert into our map.
+        const char* key = tex->getPath();
+        m_textures[key] = tex;    
+    }
+
+    m_dirtyEntities.clear();
+}
+
 HgError RenderingEngine::updateRenderCommand(Entity* ent){
+    
     auto index = m_renderCommands.find(ent->getId());
     if(index != m_renderCommands.end()){
         RenderCommand* rc = &(index->second);
         rc->updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
+        rc->setTextureID(ent->getTextureId());
         return HgError::eSuccess;
     }
     return HgError::eFailure;
@@ -151,29 +203,11 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
 //note: should this pass in ent instead of mesh? ent has position data...
 HgError RenderingEngine::createRenderCommand(Entity* ent){
     //create a render command
-    RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh());
+    RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh(), ent->getTextureId());
     rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
     //insert the rendercommand into the map
     m_renderCommands.emplace(ent->getId(), std::move(rc));
     printf("Created Render Command! \n");
-
-    return HgError::eSuccess;
-}
-
-//NOTE: should this be similar to dirty ents? copy the data to the thread and then deal with it later?
-//(yes - can only be called after everything is properly initialized, which won't happen if called outside
-//the thread before it is ready)
-//TODO: better storage of textures
-//and only store unique textures.
-HgError RenderingEngine::addTexture(const void* data, const size_t width, const size_t height, uint32_t& id){
-    std::lock_guard<std::mutex>lock(m_RenderingMutex);
-    printf("generating texture ID!\n");
-    glGenTextures(1, &id);
-    printf("Texture ID: %u\n", id);
-    glBindTexture(GL_TEXTURE_2D, id);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
 
     return HgError::eSuccess;
 }

@@ -15,7 +15,7 @@ HgError Mesh::setNormals(PointArray normals){
     return HgError::eSuccess;
 }
 
-HgError Mesh::setUV(PointArray UV){
+HgError Mesh::setUV(std::vector<unsigned int> UV){
     m_UV = UV;
     return HgError::eSuccess;
 }

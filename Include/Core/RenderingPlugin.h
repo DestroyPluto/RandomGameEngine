@@ -23,7 +23,7 @@ class RenderingPlugin{
          * load a texture/image into the rendering image
          * [out] id - the image/texture ID
          */
-        virtual HgError addTexture(const void* data, const size_t width, const size_t height, uint32_t& id) = 0;
+        virtual HgError addTexture(core::HgTexture* tex) = 0;
 
         /**
          * clean up any rendering resources.

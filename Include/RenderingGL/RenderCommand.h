@@ -8,9 +8,10 @@
 namespace rendering{
     class RenderCommand{
     public:
-        RenderCommand(uint32_t globalId, core::Mesh* mesh); //since render command owns the geometry object, it should be responsible for creating it.
+        RenderCommand(uint32_t globalId, core::Mesh* mesh, uint32_t textureID); //since render command owns the geometry object, it should be responsible for creating it.
         void execute(Shader* shader);
         void updateModelMatrix(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale);
+        void setTextureID(uint32_t id);
 
     private:
         uint32_t m_globalId;

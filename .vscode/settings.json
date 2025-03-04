@@ -62,6 +62,9 @@
         "mutex": "cpp",
         "fstream": "cpp",
         "iostream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "unordered_set": "cpp"
     }
 }

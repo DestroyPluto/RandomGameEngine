@@ -1,7 +1,8 @@
 #include "PNGLoader.h"
-#include <png.h>
 #include <cstring>
 #include <stdlib.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 using namespace io;
 using namespace core;
@@ -9,41 +10,17 @@ using namespace core;
 PNGLoader::PNGLoader(RenderingPlugin* plugin){
     if(plugin)
         m_plugin = plugin;
+    stbi_set_flip_vertically_on_load(true);
 }
 
-HgError PNGLoader::loadFromFile(const char* filePath, uint32_t& id){
-    printf("loading png file: %s\n", filePath);
-    png_image image;
-    memset(&image, 0, sizeof(image));
-    image.version = PNG_IMAGE_VERSION;
+HgTexture* PNGLoader::loadFromFile(const char* filePath){
+    uint32_t id = 0;
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(filePath, &width, &height, &nrChannels, 0);
+    
+    if(data)
+       return new HgTexture(data, width, height, nrChannels, filePath);
+    printf("failed to load png file!  \n");
 
-    if(png_image_begin_read_from_file(&image, filePath) != 0){
-        png_bytep buffer;
-        image.format = PNG_FORMAT_RGBA;
-        size_t imageSize = PNG_IMAGE_SIZE(image);
-        buffer = (png_bytep)malloc(imageSize);
-
-        if(buffer != NULL && png_image_finish_read(&image, NULL, buffer, 0, NULL) != 0){
-
-            //not sure if I'll need these just yet, but just in case
-            size_t width = image.width;
-            size_t height = image.height;
-            
-            m_plugin->addTexture(buffer, width, height, id);
-
-            //this is just for testing, ignore for now
-            if(png_image_write_to_file(&image, "test.png", 0, buffer, 0, NULL) != 0){
-                return HgError::eSuccess;
-            }
-        }else{
-            if(buffer = NULL){
-                png_image_free(&image);
-            }else{
-                free(buffer);
-            }
-        }
-    }
-    printf("png to png read error: %s \n", image.message);    
-
-    return HgError::eFailure;
+    return nullptr;
 }

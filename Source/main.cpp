@@ -33,46 +33,50 @@ int main(int args, char** argv){
     engine->m_mouseCallback = & mouse_callback;
     std::thread renderingThread = engine->startPlugin();
 
+    //initialize png loader, and load file.
+    PNGLoader loader((RenderingPlugin*)engine.get());
+   
     //Create a mesh of a basic square
     //Entity* ent = new Entity(0);
     //Button* button = new Button(0);
     std::unique_ptr<Button> button = std::make_unique<Button>(0);
-
     button->setPosition({1,1,0});
 
-    std::vector<Entity*> dirtyEnts = std::vector<Entity*>();
+    HgTexture* tex = loader.loadFromFile("redChecker.png");
+    button->setTexture(tex);
+    engine->addTexture(tex);
 
-    dirtyEnts.push_back(button.get());
+    std::vector<Entity*> Entities = std::vector<Entity*>();
+    std::vector<Entity*> dirtyEnts = std::vector<Entity*>();
+    Entities.push_back(button.get());
 
     //send it to the rendering Engine
-    HgError err = engine->setDirtyEntities(dirtyEnts);
+    HgError err = engine->setDirtyEntities(Entities);
 
     if(err != HgError::eSuccess)
         printf("Something went wrong setting the dirty Ents!\n err: %d\n", err);
 
     bool shouldEnd = false;
 
-    //initialize png loader, and load file.
-    uint32_t fileIndex = 0;
-    PNGLoader loader((RenderingPlugin*)engine.get());
-   
+
     Keyboard* keyboard = Keyboard::getInstance();
     
-    bool texturesLoaded = false;
-
     while(!shouldEnd){
-        if(engine->isInitialized() && !texturesLoaded){
-            loader.loadFromFile("redChecker.png", fileIndex);
-            uint32_t id;
-            loader.loadFromFile("redChecker.png", id);
-            printf("out ID: %u\n", id);
-
-            texturesLoaded = true;
-        }
         shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
 
         if(keyboard->isKeyDown(Keyboard::KEY_W)){
+            button->setDirty(true);
+        }
 
+        dirtyEnts.clear();
+
+        for(Entity* e : Entities){
+            if(e->isDirty()){
+                dirtyEnts.push_back(e);
+            }
+        }
+        if(dirtyEnts.size() > 0){
+            engine->setDirtyEntities(dirtyEnts);
         }
     }
 

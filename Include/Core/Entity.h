@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/vec3.hpp>
 #include "Mesh.h"
+#include "Texture.h"
 
 namespace core{
 
@@ -13,6 +14,9 @@ class Entity{
         bool isDirty(){return m_isDirty;}
         void setDirty(bool isDirty){m_isDirty = isDirty;}
         uint32_t getId(){return m_id;}
+        
+        void setTexture(HgTexture* tex){m_texture = tex;};
+        uint32_t getTextureId(){return m_texture->getId();};
 
         void setPosition(glm::vec3 pos){m_position = pos;}
         void setRotation(glm::vec3 rot){m_rotation = rot;}
@@ -29,6 +33,8 @@ class Entity{
         glm::vec3 m_position;
         glm::vec3 m_rotation;
         glm::vec3 m_scale;
+
+        HgTexture* m_texture;
 
         uint32_t m_id;
         bool m_isDirty;

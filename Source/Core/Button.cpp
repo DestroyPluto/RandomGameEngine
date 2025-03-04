@@ -22,5 +22,15 @@ Button::Button(uint32_t id) : Entity(id){
     points.push_back(four);
 
     m_mesh.setPoints(points, true);
-    setScale({1,0.5,0});
+
+    std::vector<unsigned int> uvs = std::vector<unsigned int>({ 0, 0,
+                                                                1, 0,
+                                                                1, 1,
+                                                                0, 0,
+                                                                1, 1,
+                                                                0, 1, });
+    
+    m_mesh.setUV(uvs);
+
+    setScale({1,1,0});
 }

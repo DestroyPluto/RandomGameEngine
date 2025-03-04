@@ -13,7 +13,7 @@ HgError OBJLoader::loadFromFile(const char* filePath, Mesh& mesh){
 
     PointArray vertices;
     PointArray normals;
-    PointArray UVCoords;
+    std::vector<unsigned int> UVCoords;
     std::vector<unsigned int> indices;
     std::vector<unsigned int> textureIndices;
     std::vector<unsigned int> normalIndices;
@@ -48,11 +48,13 @@ HgError OBJLoader::loadFromFile(const char* filePath, Mesh& mesh){
                 
                 std::size_t pos = line.find(" ");
 
-                float u = std::stof(line.substr(0,pos));
+                unsigned int u = std::stoul(line.substr(0,pos));
 
-                float v = std::stof(line.substr(pos + 1));
+                unsigned int v = std::stoul(line.substr(pos + 1));
 
-                UVCoords.push_back(Point(u, v));
+                UVCoords.push_back(u);
+                
+                UVCoords.push_back(v);
                 continue;
             }
 

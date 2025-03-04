@@ -5,11 +5,13 @@
 #include <vector>
 #include <mutex>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
 
 #include "RenderCommand.h"
 #include "Entity.h"
 #include "BasicShader.h"
+#include "Texture.h"
 
 namespace rendering
 {
@@ -19,7 +21,7 @@ namespace rendering
 	public:
 		virtual std::thread startPlugin() override;
 		virtual core::HgError setDirtyEntities(std::vector<core::Entity *> &entities) override;
-		virtual core::HgError addTexture(const void* data, const size_t width, const size_t height, uint32_t& id) override;
+		virtual core::HgError addTexture(core::HgTexture* texture) override;
 		virtual core::HgError closePlugin() override;
 		std::function<void(int, int)> m_keyCallback;
 		std::function<void(double, double)> m_mouseCallback;
@@ -28,12 +30,15 @@ namespace rendering
 		virtual core::HgError initPlugin() override;
 		void renderloop();
 		void handleDirtyEnts();
+		void handleDirtyTextures();
 
 	private:
 		GLFWwindow *m_window;
 		std::mutex m_RenderingMutex;
-		std::vector<core::Entity *> m_dirtyEntities;
+		std::unordered_set<core::Entity *> m_dirtyEntities;
 		std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
+		std::unordered_map<const char*, core::HgTexture*> m_textures;
+		std::unordered_set<core::HgTexture*> m_dirtyTextures;
 		core::HgError createRenderCommand(core::Entity*);
 		core::HgError updateRenderCommand(core::Entity*);
 		bool m_isInitialized = false;

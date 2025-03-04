@@ -6,10 +6,16 @@
 using namespace rendering;
 using namespace core;
 
-RenderCommand::RenderCommand(uint32_t id, Mesh* mesh){
+RenderCommand::RenderCommand(uint32_t id, Mesh* mesh, uint32_t textureId){
     m_geometry = new Geometry(id); //memory owndership :/
     m_geometry->addAttribute(Attribute::aVertex, mesh->getPoints().toFloatVector());
+    m_geometry->addAttribute(Attribute::aTexture, mesh->getUvs());
     m_modelMatrix = glm::mat4(1.0f); //make sure it is initialized
+    m_geometry->addTexture(textureId);
+}
+
+void RenderCommand::setTextureID(uint32_t texID){
+    m_geometry->addTexture(texID);
 }
 
 void RenderCommand::execute(Shader* shader){
