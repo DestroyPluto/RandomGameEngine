@@ -1,13 +1,15 @@
 #include "Keyboard.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "Logger.h"
 
 using namespace io;
+using namespace core;
 
 Keyboard::Keyboard(){
     m_keys = (int*)calloc(KEY_LAST, sizeof(int));
     if(!m_keys){
-        printf("Failed to initialize key cache!");
+        HgLogger::logError("Failed to initialize key cache!");
     }
 }
 
@@ -26,5 +28,5 @@ void Keyboard::setKey(int key, int action){
     
     m_keys[key] = action;
 
-    printf("%d is %d \n", key, action);
+    HgLogger::logDebug("%d is %d", key, action);
 }

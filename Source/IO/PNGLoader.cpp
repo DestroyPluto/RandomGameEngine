@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <Logger.h>
 
 using namespace io;
 using namespace core;
@@ -20,7 +21,7 @@ HgTexture* PNGLoader::loadFromFile(const char* filePath){
     
     if(data)
        return new HgTexture(data, width, height, nrChannels, filePath);
-    printf("failed to load png file!  \n");
+    HgLogger::logError("failed to load png file!");
 
     return nullptr;
 }

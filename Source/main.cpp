@@ -12,6 +12,7 @@
 #include "IO/Mouse.h"
 #include "core/Button.cpp"
 #include "IO/PNGLoader.h"
+#include "core/Logger.h"
 
 using namespace core;
 using namespace rendering;
@@ -54,7 +55,7 @@ int main(int args, char** argv){
     HgError err = engine->setDirtyEntities(Entities);
 
     if(err != HgError::eSuccess)
-        printf("Something went wrong setting the dirty Ents!\n err: %d\n", err);
+        HgLogger::logError("Something went wrong setting the dirty Ents!\n err: %d", err);
 
     bool shouldEnd = false;
 
@@ -81,12 +82,11 @@ int main(int args, char** argv){
     }
 
     renderingThread.join();
-    printf("closing!\n");
+    HgLogger::logMsg("closing!");
     engine->closePlugin();
     engine.reset();
 
     //delete ent;
-    
 
     return 0;
 }

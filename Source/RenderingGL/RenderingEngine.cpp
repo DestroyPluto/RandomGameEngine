@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include "glad/glad.h"
+#include <Logger.h>
 
 using namespace rendering;
 using namespace core;
@@ -207,7 +208,7 @@ HgError RenderingEngine::createRenderCommand(Entity* ent){
     rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
     //insert the rendercommand into the map
     m_renderCommands.emplace(ent->getId(), std::move(rc));
-    printf("Created Render Command! \n");
+    HgLogger::logMsg("Created Render Command!");
 
     return HgError::eSuccess;
 }

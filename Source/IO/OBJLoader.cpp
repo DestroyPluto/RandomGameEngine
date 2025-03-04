@@ -1,6 +1,7 @@
 #include "OBJLoader.h"
 #include <fstream>
 #include <sstream>
+#include <Logger.h>
 
 using namespace io;
 using namespace core;
@@ -106,8 +107,7 @@ HgError OBJLoader::loadFromFile(const char* filePath, Mesh& mesh){
 
         file.close();
     } else {
-        printf("Can't open file!\nPath: ");
-        printf(filePath);
+        HgLogger::logWarning("Can't open file!\nPath:  %s", filePath);
         return HgError::eFailure;
     }
     //TODO: these return error codes, we should probably check to see that they return success 
