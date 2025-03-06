@@ -10,4 +10,5 @@ target_include_directories(Core
 	PUBLIC
 		${CMAKE_SOURCE_DIR}/Include/Core
 		${CMAKE_SOURCE_DIR}/Include/Math
+		${CMAKE_SOURCE_DIR}/Include/IO
 )

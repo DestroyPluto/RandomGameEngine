@@ -12,6 +12,7 @@
 #include "Entity.h"
 #include "BasicShader.h"
 #include "Texture.h"
+#include "Camera.h"
 
 namespace rendering
 {
@@ -25,13 +26,15 @@ namespace rendering
 		virtual core::HgError closePlugin() override;
 		std::function<void(int, int)> m_keyCallback;
 		std::function<void(double, double)> m_mouseCallback;
+		std::function<void(int, int)> m_mouseButtonCallback;
 		bool isInitialized(){std::lock_guard<std::mutex>lock(m_RenderingMutex); return m_isInitialized;}
+		
+		Camera* getCamera(){return m_camera;}
 	protected:
 		virtual core::HgError initPlugin() override;
 		void renderloop();
 		void handleDirtyEnts();
 		void handleDirtyTextures();
-
 	private:
 		GLFWwindow *m_window;
 		std::mutex m_RenderingMutex;
@@ -44,6 +47,7 @@ namespace rendering
 		bool m_isInitialized = false;
 		//TODO: better solution for handling shaders
 		BasicShader* m_basicShader;
+		Camera* m_camera;
 	};
 
 }

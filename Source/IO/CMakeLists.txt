@@ -14,9 +14,4 @@ target_include_directories(IO
 		${CMAKE_SOURCE_DIR}/Include/Core
 		${CMAKE_SOURCE_DIR}/Include/Math
         ${CMAKE_SOURCE_DIR}/Include/IO
-		${PNG_INCLUDE_DIRS}
-)
-
-target_link_libraries(${PROJECT_NAME} 
-${PNG_LIBRARIES}
 )

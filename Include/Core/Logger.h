@@ -9,31 +9,30 @@ namespace core{
 class HgLogger{
 public:
     template <typename... Args>
-    static void logMsg(const char* msg, Args&&... args){log(msg, std::forward<Args>(args)...);}
-    static void logMsg(const char* msg){log(msg);}
+    static void logMsg(const char* msg, Args&&... args){log(msg, std::forward<Args>(args)...); log("\n");}
+    static void logMsg(const char* msg){log(msg);log("\n");}
     
     template <typename... Args>
-    static void logDebug(const char* msg, Args&&... args){log("DEBUG:");log(msg, std::forward<Args>(args)...);}
-    static void logDebug(const char* msg){log("DEBUG:");log(msg);}
+    static void logDebug(const char* msg, Args&&... args){log("DEBUG:");log(msg, std::forward<Args>(args)...);log("\n");}
+    static void logDebug(const char* msg){log("DEBUG: ");log(msg);log("\n");}
     
     template <typename... Args>
-    static void logError(const char* msg, Args&&... args){log("***ERROR***");log(msg, std::forward<Args>(args)...);log("***********");};
-    static void logError(const char* msg){log("***ERROR***");log(msg);log("***********");};
+    static void logError(const char* msg, Args&&... args){log("***ERROR***\n");log(msg, std::forward<Args>(args)...);log("\n***********\n");};
+    static void logError(const char* msg){log("***ERROR***\n");log(msg);log("\n***********\n");};
     
     template <typename... Args>
     static void logWarning(const char* msg, Args&&... args){log("Warning:");log(msg, std::forward<Args>(args)...);}
-    static void logWarning(const char* msg){log("Warning:");log(msg);}
-
+    static void logWarning(const char* msg){log("Warning: ");log(msg);log("\n");}
 
     private:
-    #ifdef LOG_STAMDARD_IO
+#ifdef LOG_STAMDARD_IO
     template <typename... Args>
-    static void log(const char* msg, Args&&... args){printf(msg, std::forward<Args>(args)...); printf("\n");}
-    static void log(const char* msg){printf(msg); printf("\n");}
-    #else
+    static void log(const char* msg, Args&&... args){printf_s(msg, std::forward<Args>(args)...);;}
+    static void log(const char* msg){printf_s(msg);}
+#else
         static void log(const char* msg, Args&&... args){printf("log output undefined!");}
         static void log(const char* msg){printf("log output undefined!");}
-    #endif
+#endif
 
 };
 }

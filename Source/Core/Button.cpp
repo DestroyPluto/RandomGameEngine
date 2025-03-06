@@ -1,8 +1,11 @@
 #include "Button.h"
 #include "PointArray.h"
+#include "Logger.h"
+#include "Mouse.h"
 
 using namespace math;
 using namespace core;
+using namespace io;
 
 Button::Button(uint32_t id) : Entity(id){
     m_mesh = Mesh();
@@ -32,5 +35,22 @@ Button::Button(uint32_t id) : Entity(id){
     
     m_mesh.setUV(uvs);
 
-    setScale({1,1,0});
+    setScale({1.0f,1.0f,1});
+    setLayer(eUI);
+}
+
+void Button::onCollision(Entity* other){
+    HgLogger::logMsg("button Collision Occured!");
+}
+
+void Button::onCollision(){
+
+    if(Mouse::getInstance()->isMouseButtonDown(Mouse::MOUSE_LEFT)){
+        onClick();
+    }
+}
+
+void Button::onClick(){
+    HgLogger::logDebug("Button Clicked!");
+    return;
 }

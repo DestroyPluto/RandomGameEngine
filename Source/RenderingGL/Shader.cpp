@@ -94,6 +94,7 @@ void Shader::unBind(){
 
 template<>
 void Shader::setUniform(std::string name, float data){
+    glUseProgram(m_id);
     glUniform1f(glGetUniformLocation(m_id, name.c_str()), data);
 }
 

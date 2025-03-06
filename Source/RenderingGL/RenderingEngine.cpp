@@ -10,8 +10,13 @@
 using namespace rendering;
 using namespace core;
 
-void framebuffer_size_callback(GLFWwindow*, int32_t width, int32_t height){
-    glViewport(0,0,width, height);
+void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height){
+    glViewport(0,0, width, height);
+    RenderingEngine* renderingEngine = static_cast<RenderingEngine*>(glfwGetWindowUserPointer(window));
+    Camera* camera = renderingEngine->getCamera();
+    assert(camera);
+    camera->setScreenWidth((float)width);
+    camera->setScreenHeight((float)height);
 }
 
 void processInput(GLFWwindow* window){
@@ -32,8 +37,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_callback(GLFWwindow* window, double xPos, double yPos){
     RenderingEngine* renderingEngine = static_cast<RenderingEngine*>(glfwGetWindowUserPointer(window));
     assert(renderingEngine->m_mouseCallback); //if no key callback is set, then we should fail
-    renderingEngine->m_mouseCallback(xPos, yPos); 
+
+    int windowX;
+    int windowY;
+
+    glfwGetWindowSize(window, &windowX, &windowY);
+    //x and y to clip coords
+    float x = 2 * ((float)xPos/(float)windowX) - 1;
+    float y = 2 * ((float)yPos/(float)windowY) - 1;
+    y = -y;
+    renderingEngine->m_mouseCallback(x, y);
 }
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    RenderingEngine* renderingEngine = static_cast<RenderingEngine*>(glfwGetWindowUserPointer(window));
+    assert(renderingEngine->m_mouseButtonCallback); //if no key callback is set, then we should fail
+    renderingEngine->m_mouseButtonCallback(button, action);
+}
+
 
 HgError RenderingEngine::initPlugin() {
     //init glfw
@@ -42,7 +64,10 @@ HgError RenderingEngine::initPlugin() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    m_window = glfwCreateWindow(800, 600, "Mercury", NULL, NULL);
+    m_camera = new Camera();
+    m_camera->setScreenWidth(800.0f);
+    m_camera->setScreenHeight(600.0f);
+    m_window = glfwCreateWindow(800.0f, 600.0f, "Mercury", NULL, NULL);
 
     if(m_window == NULL){
         glfwTerminate();
@@ -55,9 +80,12 @@ HgError RenderingEngine::initPlugin() {
     }
     glfwSetWindowUserPointer(m_window, this);
     glViewport(0,0,800,600);
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     glfwSetKeyCallback(m_window, key_callback);
     glfwSetCursorPosCallback(m_window, mouse_callback);
+    glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
     m_basicShader = new BasicShader();
@@ -65,11 +93,8 @@ HgError RenderingEngine::initPlugin() {
     
     m_basicShader->setColour(0.5f,0.0f,0.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f,0.0f,-7.0f));
-    m_basicShader->setViewMatrix(view);
     m_basicShader->setModelMatrix(model);
-    m_basicShader->setProjectionMatrix(glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 500.0f));
+
     m_isInitialized = true;
     renderloop();
 
@@ -79,6 +104,7 @@ HgError RenderingEngine::initPlugin() {
 void RenderingEngine::renderloop(){
 
      while(!glfwWindowShouldClose(m_window)){
+        glfwPollEvents();
         //get input
         processInput(m_window);
 
@@ -89,12 +115,20 @@ void RenderingEngine::renderloop(){
         //geometry pass - should probably move this into it's own thing.
         //should also have a different pass for each shader type.
         for(auto rc = m_renderCommands.begin(); rc != m_renderCommands.end(); rc++){
+            if(rc->second.getKey() < 1){
+                //m_basicShader->setProjectionMatrix(m_camera->getOrtho());
+                m_basicShader->setProjectionMatrix(glm::mat4(1.0));
+                m_basicShader->setViewMatrix(glm::mat4(1.0));
+            }else{
+                m_basicShader->setProjectionMatrix(m_camera->getPerspective());
+                m_basicShader->setViewMatrix(m_camera->getView());
+            }
             rc->second.execute(m_basicShader);
         }
 
         //update buffers
         glfwSwapBuffers(m_window);
-        glfwPollEvents();
+
 
         //update entities for the next frame
         handleDirtyEnts();
@@ -116,11 +150,6 @@ HgError RenderingEngine::setDirtyEntities(std::vector<Entity*>& entities){
     return HgError::eSuccess;
 }
 
-//NOTE: should this be similar to dirty ents? copy the data to the thread and then deal with it later?
-//(yes - can only be called after everything is properly initialized, which won't happen if called outside
-//the thread before it is ready)
-//TODO: better storage of textures
-//and only store unique textures.
 HgError RenderingEngine::addTexture(HgTexture* texture) {
     std::lock_guard<std::mutex>lock(m_RenderingMutex);
         m_dirtyTextures.insert(texture);
@@ -203,8 +232,10 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
 
 //note: should this pass in ent instead of mesh? ent has position data...
 HgError RenderingEngine::createRenderCommand(Entity* ent){
+    //TODO: proper key generation.
+    uint32_t key = ent->getLayer();
     //create a render command
-    RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh(), ent->getTextureId());
+    RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh(), ent->getTextureId(), key);
     rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
     //insert the rendercommand into the map
     m_renderCommands.emplace(ent->getId(), std::move(rc));

@@ -1,6 +1,5 @@
 #include "Keyboard.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include "Logger.h"
 
 using namespace io;

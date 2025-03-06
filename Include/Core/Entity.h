@@ -5,6 +5,11 @@
 
 namespace core{
 
+typedef enum {
+    eUI = 1,
+    eWorld=2
+} hgLayer;
+
 class Entity{
 
     public:
@@ -15,6 +20,9 @@ class Entity{
         void setDirty(bool isDirty){m_isDirty = isDirty;}
         uint32_t getId(){return m_id;}
         
+        hgLayer getLayer(){return m_layer;}
+        void setLayer(hgLayer layer){m_layer = layer;}
+
         void setTexture(HgTexture* tex){m_texture = tex;};
         uint32_t getTextureId(){return m_texture->getId();};
 
@@ -25,17 +33,24 @@ class Entity{
         glm::vec3 getPosition(){return m_position;}
         glm::vec3 getRotation(){return m_rotation;}
         glm::vec3 getScale(){return m_scale;}
+
+        bool intersects(Entity* other);
+        bool intersects(glm::vec3 pos);
+        bool intersects(float x, float y, float z);
+        
+        virtual void onCollision(Entity* other);
+        virtual void onCollision(); //specifically the mouse
     
     protected:
         Mesh m_mesh;
-    
+
     private:
         glm::vec3 m_position;
         glm::vec3 m_rotation;
         glm::vec3 m_scale;
 
         HgTexture* m_texture;
-
+        hgLayer m_layer;
         uint32_t m_id;
         bool m_isDirty;
 };
