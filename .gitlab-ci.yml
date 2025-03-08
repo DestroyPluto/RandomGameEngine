@@ -1,5 +1,6 @@
 
 build-linux-container-job:
+  image: docker:24.0.5-dind
   stage: build
   before_script:
     - docker info
