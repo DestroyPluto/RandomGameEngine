@@ -1,5 +1,10 @@
+
 build-linux-container-job:
   stage: build
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker info
   script:
     - cd DockerFiles/
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
