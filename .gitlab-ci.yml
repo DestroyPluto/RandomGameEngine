@@ -1,10 +1,10 @@
 
 build-linux-container-job:
-  image: docker:24.0.5-dind
+  image: docker
+  services:
+    - name: docker:dind
+      alias: docker
   stage: build
-  before_script:
-    - unset DOCKER_HOST
-    - docker info
   script:
     - cd DockerFiles/
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
