@@ -4,6 +4,7 @@ build-linux-container-job:
   services:
     - name: docker:dind
       alias: docker
+      command: ["--tls=false"]
   stage: build
   before_script:
     - echo $CI_REGISTRY
