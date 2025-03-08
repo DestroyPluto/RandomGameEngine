@@ -2,7 +2,7 @@ build-linux-container-job:
   stage: build
   script:
     - cd DockerFiles/
-    - docker login 192.168.1.17:5050
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - docker build -t 192.168.1.17:5050/destroypluto/practiceproject:linux -f linux.Dockerfile
     - docker push 192.168.1.17:5050/destroypluto/practiceproject:linux
 
