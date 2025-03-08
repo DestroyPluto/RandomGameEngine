@@ -2,7 +2,7 @@ build-linux-container-job:
   services:
     - name: docker:dind
       alias: dockerhost
-      command: ["--tls=false", "--insecure-registry=http://192.168.1.17:5050"]
+      command: ["--tls=false", "--insecure-registry=http://192.168.1.17/gitlab:5050"]
   variables:
     DOCKER_HOST: tcp://dockerhost:2375
     DOCKER_DRIVER: overlay2
@@ -12,7 +12,7 @@ build-linux-container-job:
     - docker info
   script:
     - cd DockerFiles/
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login http://192.168.1.17/gitlab:5050 -u $CI_REGISTRY_USER --password-stdin
     - docker build -t http://192.168.1.17:5050/destroypluto/practiceproject:linux -f linux.Dockerfile .
     - docker push http://192.168.1.17:5050/destroypluto/practiceproject:linux
 
