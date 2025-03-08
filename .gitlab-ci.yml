@@ -1,10 +1,10 @@
-
 build-linux-container-job:
   image: ubuntu:latest
   services:
     - name: docker:dind
       alias: docker
-      entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
+      command: ["--tls=false", "--insecure-registry=http://192.168.1.17:5050"]
+
   stage: build
   before_script:
     - echo $CI_REGISTRY
