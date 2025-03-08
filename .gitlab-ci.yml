@@ -1,5 +1,4 @@
 build-linux-container-job:
-  image: ubuntu:latest
   services:
     - name: docker:dind
       alias: docker
