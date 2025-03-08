@@ -1,8 +1,12 @@
 build-linux-container-job:
   services:
     - name: docker:dind
-      alias: docker
+      alias: dockerhost
       command: ["--tls=false", "--insecure-registry=http://192.168.1.17:5050"]
+  variables:
+    DOCKER_HOST: tcp://dockerhost:2375
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   stage: build
   before_script:
     - docker info
