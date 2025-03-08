@@ -3,10 +3,8 @@ build-linux-container-job:
     - name: docker:dind
       alias: docker
       command: ["--tls=false", "--insecure-registry=http://192.168.1.17:5050"]
-
   stage: build
   before_script:
-    - echo $CI_REGISTRY
     - docker info
   script:
     - cd DockerFiles/
