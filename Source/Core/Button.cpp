@@ -37,6 +37,7 @@ Button::Button(uint32_t id) : Entity(id){
 
     setScale({1.0f,1.0f,1});
     setLayer(eUI);
+    m_clickProgress = false;
 }
 
 void Button::onCollision(Entity* other){
@@ -44,10 +45,16 @@ void Button::onCollision(Entity* other){
 }
 
 void Button::onCollision(){
-
     if(Mouse::getInstance()->isMouseButtonDown(Mouse::MOUSE_LEFT)){
-        onClick();
+        if(!m_clickProgress){
+            m_clickProgress = true;
+            onClick();
+        }
+    }else{
+        m_clickProgress = false;
     }
+    
+
 }
 
 void Button::onClick(){

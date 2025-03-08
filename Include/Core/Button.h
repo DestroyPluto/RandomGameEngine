@@ -8,5 +8,7 @@ namespace core {
             virtual void onCollision(Entity* other) override;
             virtual void onCollision() override;
             virtual void onClick();
+        private:
+            bool m_clickProgress;
     };
 }
