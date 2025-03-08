@@ -5,14 +5,16 @@ build-linux-container-job:
     - name: docker:dind
       alias: docker
   stage: build
+  before_script:
+    - echo $CI_REGISTRY
   script:
     - cd DockerFiles/
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t 192.168.1.17:5050/destroypluto/practiceproject:linux -f linux.Dockerfile
-    - docker push 192.168.1.17:5050/destroypluto/practiceproject:linux
+    - docker build -t $CI_REGISTRY/destroypluto/practiceproject:linux -f linux.Dockerfile
+    - docker push $CI_REGISTRY/destroypluto/practiceproject:linux
 
 build-linux-job:
-  image: 192.168.1.17:5050/destroypluto/practiceproject:linux
+  image: $CI_REGISTRY/destroypluto/practiceproject:linux
   stage: build
   needs: ["build-linux-container-job"]
   script:
