@@ -9,7 +9,7 @@ build-linux-container-job:
     - echo $CI_REGISTRY
   script:
     - cd DockerFiles/
-    - echo "$CI_REGISTRY_PASSWORD" | docker login http://$CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    #- echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - docker build -t $CI_REGISTRY/destroypluto/practiceproject:linux -f linux.Dockerfile
     - docker push $CI_REGISTRY/destroypluto/practiceproject:linux
 
