@@ -12,9 +12,9 @@ build-linux-container-job:
     - docker info
   script:
     - cd DockerFiles/
-    - echo "$CI_REGISTRY_PASSWORD" | docker login http://192.168.1.17/gitlab:5050 -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t http://192.168.1.17:5050/destroypluto/practiceproject:linux -f linux.Dockerfile .
-    - docker push http://192.168.1.17:5050/destroypluto/practiceproject:linux
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker build -t ${CI_REGISTRY}/destroypluto/practiceproject:linux -f linux.Dockerfile .
+    - docker push ${CI_REGISTRY}/destroypluto/practiceproject:linux
 
 build-linux-job:
   image: $CI_REGISTRY/destroypluto/practiceproject:linux
