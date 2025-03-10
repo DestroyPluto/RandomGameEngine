@@ -2,7 +2,7 @@ build-linux-container-job:
   services:
     - name: docker:24.0.6-dind
       alias: dockerhost
-      command: ["--tls=false", "--docker-privileged"]
+      command: ["--tls=false"]
   variables:
     DOCKER_HOST: tcp://dockerhost:2375
     DOCKER_DRIVER: overlay2
