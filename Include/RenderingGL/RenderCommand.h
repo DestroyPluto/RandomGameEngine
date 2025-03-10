@@ -3,7 +3,7 @@
 #include <Mesh.h>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
-#include "shader.h"
+#include "Shader.h"
 
 namespace rendering{
     class RenderCommand{
