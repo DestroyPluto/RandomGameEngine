@@ -24,11 +24,9 @@ build-linux-job:
     - apt update
     - apt install -y cmake
     - apt install -y clang-16
-    - apt install -y libwayland-dev 
-    - apt install -y libxkbcommon-dev
     - apt install -y xorg-dev
-    - export CXX=usr/bin/clang++
-    - export CC=usr/bin/clang
+    - export CXX=/usr/bin/clang++
+    - export CC=/usr/bin/clang
 #  needs: ["build-linux-container-job"]
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
