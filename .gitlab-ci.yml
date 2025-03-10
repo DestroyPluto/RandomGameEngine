@@ -22,7 +22,7 @@ build-linux-job:
   stage: build
   before_script:
     - apt update
-    - apt install -ycmake
+    - apt install -y cmake
     - apt install -y clang-16
     - apt install -y xorg-dev
 #  needs: ["build-linux-container-job"]
