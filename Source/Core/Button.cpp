@@ -53,8 +53,6 @@ void Button::onCollision(){
     }else{
         m_clickProgress = false;
     }
-    
-
 }
 
 void Button::onClick(){

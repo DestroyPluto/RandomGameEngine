@@ -9,7 +9,6 @@ Source/RenderingGL/Makefile
 Source/RenderingGL/RenderingGL.exp
 Source/RenderingGL/RenderingGL.lib
 Source/RenderingGL/CMakeFiles/*
-ThirdParty/*
 Bin/*
 build/*
 Source/Core/CMakeFiles/*
