@@ -1,25 +1,31 @@
-build-linux-container-job:
-  services:
-    - name: docker:24.0.6-dind
-      alias: dockerhost
-      command: ["--tls=false"]
-  variables:
-    DOCKER_HOST: tcp://dockerhost:2375
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  stage: build
-  before_script:
-    - docker info
-  script:
-    - cd DockerFiles/
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t ${CI_REGISTRY}/destroypluto/practiceproject:linux -f linux.Dockerfile .
-    - docker push ${CI_REGISTRY}/destroypluto/practiceproject:linux
+#build-linux-container-job:
+#  services:
+#    - name: docker:24.0.6-dind
+#      alias: dockerhost
+#      command: ["--tls=false"]
+#  variables:
+#    DOCKER_HOST: tcp://dockerhost:2375
+#    DOCKER_DRIVER: overlay2
+#    DOCKER_TLS_CERTDIR: ""
+#  stage: build
+#  before_script:
+#    - docker info
+#  script:
+#    - cd DockerFiles/
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+#    - docker build -t ${CI_REGISTRY}/destroypluto/practiceproject:linux -f linux.Dockerfile .
+#    - docker push ${CI_REGISTRY}/destroypluto/practiceproject:linux
 
 build-linux-job:
-  image: $CI_REGISTRY/destroypluto/practiceproject:linux
+#  image: $CI_REGISTRY/destroypluto/practiceproject:linux
+  image: ubuntu:latest
   stage: build
-  needs: ["build-linux-container-job"]
+  before_script:
+    - apt update
+    - apt install -ycmake
+    - apt install -y clang-16
+    - apt install -y xorg-dev
+#  needs: ["build-linux-container-job"]
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
     - cmake --fresh .
