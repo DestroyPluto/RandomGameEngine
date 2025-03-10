@@ -10,6 +10,7 @@ Source/RenderingGL/RenderingGL.exp
 Source/RenderingGL/RenderingGL.lib
 Source/RenderingGL/CMakeFiles/*
 Bin/*
+bin/*
 build/*
 Source/Core/CMakeFiles/*
 CMakeFiles/*
@@ -18,3 +19,8 @@ Source/vc140.pdb
 *.lib
 **/CMakeFiles/*
 Source/Core/Core.lib
+*.a
+*.so
+ThirdParty/glfw-3.4/src/glfw3ConfigVersion.cmake
+ThirdParty/glfw-3.4/src/glfw3.pc
+ThirdParty/glfw-3.4/cmake_uninstall.cmake

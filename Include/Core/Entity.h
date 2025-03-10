@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/vec3.hpp>
 #include "Mesh.h"
-#include "Texture.h"
+#include "HgTexture.h"
 
 namespace core{
 

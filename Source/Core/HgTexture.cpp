@@ -1,6 +1,7 @@
-#include "Texture.h"
+#include "HgTexture.h"
 #include <stdio.h>
 #include <stb_image.h>
+
 using namespace core;
 
 HgTexture::HgTexture(unsigned char* data, int width, int height, int nChannels, const char* path){

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <utility>
 
-#define LOG_STAMDARD_IO
+#define LOG_STANDARD_IO
 
 namespace core{
 
@@ -25,10 +25,10 @@ public:
     static void logWarning(const char* msg){log("Warning: ");log(msg);log("\n");}
 
     private:
-#ifdef LOG_STAMDARD_IO
+#ifdef LOG_STANDARD_IO
     template <typename... Args>
     static void log(const char* msg, Args&&... args){printf(msg, std::forward<Args>(args)...);;}
-    static void log(const char* msg){printf(msg);}
+    static void log(const char* msg){printf("%s",msg);}
 #else
         static void log(const char* msg, Args&&... args){printf("log output undefined!");}
         static void log(const char* msg){printf("log output undefined!");}

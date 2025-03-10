@@ -11,7 +11,7 @@
 #include "RenderCommand.h"
 #include "Entity.h"
 #include "BasicShader.h"
-#include "Texture.h"
+#include "HgTexture.h"
 #include "Camera.h"
 
 namespace rendering

@@ -1,7 +1,7 @@
 #pragma once
 #include <HgError.h>
 #include <RenderingPlugin.h>
-#include <Texture.h>
+#include "HgTexture.h"
 
 namespace io{
     class PNGLoader{
