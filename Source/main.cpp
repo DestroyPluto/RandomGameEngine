@@ -10,9 +10,9 @@
 #include "Math/PointArray.h"
 #include "IO/Keyboard.h"
 #include "IO/Mouse.h"
-#include "core/Button.cpp"
+#include "Core/Button.h"
 #include "IO/PNGLoader.h"
-#include "core/Logger.h"
+#include "Core/Logger.h"
 
 using namespace core;
 using namespace rendering;
