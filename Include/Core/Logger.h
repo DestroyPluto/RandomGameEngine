@@ -27,8 +27,8 @@ public:
     private:
 #ifdef LOG_STAMDARD_IO
     template <typename... Args>
-    static void log(const char* msg, Args&&... args){printf_s(msg, std::forward<Args>(args)...);;}
-    static void log(const char* msg){printf_s(msg);}
+    static void log(const char* msg, Args&&... args){printf(msg, std::forward<Args>(args)...);;}
+    static void log(const char* msg){printf(msg);}
 #else
         static void log(const char* msg, Args&&... args){printf("log output undefined!");}
         static void log(const char* msg){printf("log output undefined!");}
