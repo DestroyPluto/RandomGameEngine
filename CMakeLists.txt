@@ -9,6 +9,7 @@ file(GLOB SOURCES "Source/*.cpp"
 
 #set the output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(CMAKE_CXX_STANDARD 20)
 if(UNIX)
