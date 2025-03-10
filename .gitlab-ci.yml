@@ -27,8 +27,8 @@ build-linux-job:
     - apt install -y libwayland-dev 
     - apt install -y libxkbcommon-dev
     - apt install -y xorg-dev
-    - export CXX=clang++
-    - export CC=clang
+    - export CXX=usr/bin/clang++
+    - export CC=usr/bin/clang
 #  needs: ["build-linux-container-job"]
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
