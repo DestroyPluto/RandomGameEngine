@@ -24,3 +24,10 @@ Source/Core/Core.lib
 ThirdParty/glfw-3.4/src/glfw3ConfigVersion.cmake
 ThirdParty/glfw-3.4/src/glfw3.pc
 ThirdParty/glfw-3.4/cmake_uninstall.cmake
+_deps
+*.pdb
+*.cmake
+staticAnalysis-cppcheck-build-dir/*
+Source/Core/Core.lib
+ThirdParty/glfw-3.4/src/glfw3ConfigVersion.cmake
+staticAnalysis.cppcheck

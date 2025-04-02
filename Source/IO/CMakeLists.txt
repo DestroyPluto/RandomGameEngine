@@ -14,4 +14,6 @@ target_include_directories(IO
         ${CMAKE_SOURCE_DIR}/Include/IO
 )
 
-target_link_libraries(${PROJECT_NAME} Core)
+target_link_libraries(${PROJECT_NAME} 
+	Core
+	glaze::glaze)
