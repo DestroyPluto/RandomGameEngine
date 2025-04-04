@@ -12,8 +12,9 @@
 #include "IO/Mouse.h"
 #include "Core/Button.h"
 #include "IO/PNGLoader.h"
-#include "Core/Logger.h"
+#include "Core/HgLogger.h"
 #include "Core/Config.h"
+#include "IO/SceneLoader.h"
 
 using namespace core;
 using namespace rendering;
@@ -44,29 +45,18 @@ class Game{
         void Run(){
             std::unique_ptr<Button> button = std::make_unique<Button>(0);
             button->setPosition({0.0f,0.0f,0});
-        
-            //std::unique_ptr<Entity> entity = std::make_unique<Entity>(1);
-            //entity->setPosition({1.0f,0.0f,0.0f});
-            //entity->setScale({0.5f,0.5f,1.0f});
-            
+            m_entities = SceneLoader::loadScene("Project/GameObjects.json");
             //TODO handle textures better
             PNGLoader loader = PNGLoader();
-            HgTexture* tex = loader.loadFromFile(g_defaultTexturePath.c_str());
-            //button->setTexture(tex);
-            //entity->setTexture(tex);  
-            m_engine->addTexture(tex);
-
-            //TODO: move these into an Entity Manager?
-          
-            //Entities.push_back(button.get());
-            //m_entities.push_back(entity.get());
             
-            //send it to the rendering Engine
-            HgError err = m_engine->setDirtyEntities(m_entities);
-        
-            if(err != HgError::eSuccess)
-                HgLogger::logError("Something went wrong setting the dirty Ents!\n err: %d", err);
-        
+            //load the initial textures, or just the default one if it isn't set
+            for(Entity& e : m_entities){
+                std::string path = e.getTexturePath().empty() ? g_defaultTexturePath : e.getTexturePath();
+                HgTexture* tex =  loader.loadFromFile(path.c_str());
+                e.setTexture(tex);
+                m_engine->addTexture(tex);
+            }
+
             bool shouldEnd = false;
         
             Keyboard* keyboard = Keyboard::getInstance();
@@ -82,13 +72,13 @@ class Game{
                 double mX, mY;
                 Mouse::getInstance()->getScreenPos(mX, mY);
         
-                for(Entity* e : m_entities){
-                    if(e->isDirty()){
-                        m_dirtyEnts.push_back(e);
+                for(Entity& e : m_entities){
+                    if(e.isDirty()){
+                        m_dirtyEnts.push_back(&e);
                     }
-                    if(e->getLayer() == core::eUI){
-                        if(e->intersects(mX,mY,0))
-                            e->onCollision();
+                    if(e.getLayer() == core::eUI){
+                        if(e.intersects(mX,mY,0))
+                            e.onCollision();
                     }
                 }
                 if(m_dirtyEnts.size() > 0){
@@ -104,7 +94,7 @@ class Game{
     private:
         std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>();
         std::thread m_renderingThread;
-        std::vector<Entity*> m_entities = std::vector<Entity*>();
+        std::vector<Entity> m_entities = std::vector<Entity>();
         std::vector<Entity*> m_dirtyEnts = std::vector<Entity*>();
 };
 

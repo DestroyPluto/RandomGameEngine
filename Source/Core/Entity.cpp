@@ -1,5 +1,5 @@
 #include  "Entity.h"
-#include "Logger.h"
+#include "HgLogger.h"
 #include "Config.h"
 
 using namespace core;

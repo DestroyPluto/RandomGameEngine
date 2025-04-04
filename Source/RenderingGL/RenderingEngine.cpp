@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include "glad/glad.h"
-#include <Logger.h>
+#include <HgLogger.h>
 
 using namespace rendering;
 using namespace core;

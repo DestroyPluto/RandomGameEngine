@@ -1,6 +1,6 @@
 #include "Keyboard.h"
 #include <stdlib.h>
-#include "Logger.h"
+#include "HgLogger.h"
 
 using namespace io;
 using namespace core;

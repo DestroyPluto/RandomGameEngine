@@ -1,7 +1,7 @@
 #include "OBJLoader.h"
 #include <fstream>
 #include <sstream>
-#include <Logger.h>
+#include <HgLogger.h>
 
 using namespace io;
 using namespace core;

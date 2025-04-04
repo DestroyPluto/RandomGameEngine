@@ -1,6 +1,6 @@
 #include "Button.h"
 #include "PointArray.h"
-#include "Logger.h"
+#include "HgLogger.h"
 #include "Mouse.h"
 
 using namespace math;

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include <Logger.h>
+#include <HgLogger.h>
 
 using namespace io;
 using namespace core;

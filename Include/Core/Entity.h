@@ -2,6 +2,7 @@
 #include <glm/vec3.hpp>
 #include "Mesh.h"
 #include "HgTexture.h"
+#include <string>
 
 namespace core{
 
@@ -25,6 +26,9 @@ class Entity{
 
         void setTexture(HgTexture* tex){m_texture = tex;}
         uint32_t getTextureId(){return m_texture->getId();}
+
+        void setTexturePath(std::string path){m_texturePath = path;}
+        std::string getTexturePath(){return m_texturePath;}
 
         void setPosition(glm::vec3 pos){m_position = pos;}
         void setRotation(glm::vec3 rot){m_rotation = rot;}
@@ -51,6 +55,7 @@ class Entity{
         glm::vec3 m_scale;
 
         HgTexture* m_texture; //TODO: have a default texture
+        std::string m_texturePath;
         hgLayer m_layer;
         uint32_t m_id;
         bool m_isDirty;

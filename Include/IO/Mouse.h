@@ -1,5 +1,5 @@
 #pragma once
-#include "Logger.h"
+#include "HgLogger.h"
 
 namespace io {
     class Mouse {
