@@ -8,6 +8,8 @@ namespace core {
 class Mesh{
 
 public:
+    Mesh();
+    Mesh(const Mesh& other);
     HgError setPoints(math::PointArray points, bool b2D);
     HgError setNormals(math::PointArray normals);
     HgError setUV(std::vector<unsigned int> uvs);

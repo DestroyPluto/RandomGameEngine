@@ -13,6 +13,7 @@
 #include "Core/Button.h"
 #include "IO/PNGLoader.h"
 #include "Core/Logger.h"
+#include "Core/Config.h"
 
 using namespace core;
 using namespace rendering;
@@ -31,73 +32,86 @@ void mouse_button_callback(int button, int action){
     Mouse::getInstance()->setMouseButton(button, action);
 }
 
-int main(int args, char** argv){
+class Game{
 
-    std::unique_ptr<RenderingEngine> engine = std::make_unique<RenderingEngine>();
-    engine->m_keyCallback = &key_callback;
-    engine->m_mouseCallback = &mouse_callback;
-    engine->m_mouseButtonCallback = &mouse_button_callback;
-    std::thread renderingThread = engine->startPlugin();
-
-    //initialize png loader, and load file.
-    PNGLoader loader((RenderingPlugin*)engine.get());
-   
-    //Create a mesh of a basic square
-    //Entity* ent = new Entity(0);
-    //Button* button = new Button(0);
-    std::unique_ptr<Button> button = std::make_unique<Button>(0);
-    button->setPosition({0.0f,0.0f,0});
-
-    HgTexture* tex = loader.loadFromFile("redChecker.png");
-    button->setTexture(tex);
-    engine->addTexture(tex);
-
-    std::vector<Entity*> Entities = std::vector<Entity*>();
-    std::vector<Entity*> dirtyEnts = std::vector<Entity*>();
-    Entities.push_back(button.get());
-
-    //send it to the rendering Engine
-    HgError err = engine->setDirtyEntities(Entities);
-
-    if(err != HgError::eSuccess)
-        HgLogger::logError("Something went wrong setting the dirty Ents!\n err: %d", err);
-
-    bool shouldEnd = false;
-
-
-    Keyboard* keyboard = Keyboard::getInstance();
-    
-    while(!shouldEnd){
-        shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
-
-        if(keyboard->isKeyDown(Keyboard::KEY_W)){
-            button->setDirty(true);
+    public:    
+    	Game(){ 
+            m_engine->m_keyCallback = &key_callback;
+            m_engine->m_mouseCallback = &mouse_callback;
+            m_engine->m_mouseButtonCallback = &mouse_button_callback;
+            m_renderingThread = m_engine->startPlugin();
         }
+        void Run(){
+            std::unique_ptr<Button> button = std::make_unique<Button>(0);
+            button->setPosition({0.0f,0.0f,0});
+        
+            //std::unique_ptr<Entity> entity = std::make_unique<Entity>(1);
+            //entity->setPosition({1.0f,0.0f,0.0f});
+            //entity->setScale({0.5f,0.5f,1.0f});
+            
+            //TODO handle textures better
+            PNGLoader loader = PNGLoader();
+            HgTexture* tex = loader.loadFromFile(g_defaultTexturePath.c_str());
+            //button->setTexture(tex);
+            //entity->setTexture(tex);  
+            m_engine->addTexture(tex);
 
-        dirtyEnts.clear();
-        double mX, mY;
-        Mouse::getInstance()->getScreenPos(mX, mY);
-
-        for(Entity* e : Entities){
-            if(e->isDirty()){
-                dirtyEnts.push_back(e);
+            //TODO: move these into an Entity Manager?
+          
+            //Entities.push_back(button.get());
+            //m_entities.push_back(entity.get());
+            
+            //send it to the rendering Engine
+            HgError err = m_engine->setDirtyEntities(m_entities);
+        
+            if(err != HgError::eSuccess)
+                HgLogger::logError("Something went wrong setting the dirty Ents!\n err: %d", err);
+        
+            bool shouldEnd = false;
+        
+            Keyboard* keyboard = Keyboard::getInstance();
+            
+            while(!shouldEnd){
+                shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
+        
+                if(keyboard->isKeyDown(Keyboard::KEY_W)){
+                    button->setDirty(true);
+                }
+        
+                m_dirtyEnts.clear();
+                double mX, mY;
+                Mouse::getInstance()->getScreenPos(mX, mY);
+        
+                for(Entity* e : m_entities){
+                    if(e->isDirty()){
+                        m_dirtyEnts.push_back(e);
+                    }
+                    if(e->getLayer() == core::eUI){
+                        if(e->intersects(mX,mY,0))
+                            e->onCollision();
+                    }
+                }
+                if(m_dirtyEnts.size() > 0){
+                    m_engine->setDirtyEntities(m_dirtyEnts);
+                }
             }
-            if(e->getLayer() == core::eUI){
-                if(e->intersects(mX,mY,0))
-                    e->onCollision();
-            }
+        
+            m_renderingThread.join();
+            HgLogger::logMsg("closing!");
+            m_engine->closePlugin();
+            m_engine.reset();
         }
-        if(dirtyEnts.size() > 0){
-            engine->setDirtyEntities(dirtyEnts);
-        }
-    }
+    private:
+        std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>();
+        std::thread m_renderingThread;
+        std::vector<Entity*> m_entities = std::vector<Entity*>();
+        std::vector<Entity*> m_dirtyEnts = std::vector<Entity*>();
+};
 
-    renderingThread.join();
-    HgLogger::logMsg("closing!");
-    engine->closePlugin();
-    engine.reset();
-
-    //delete ent;
+int main(int args, char** argv)
+{
+    Game game = Game();
+    game.Run();
 
     return 0;
 }

@@ -23,8 +23,8 @@ class Entity{
         hgLayer getLayer(){return m_layer;}
         void setLayer(hgLayer layer){m_layer = layer;}
 
-        void setTexture(HgTexture* tex){m_texture = tex;};
-        uint32_t getTextureId(){return m_texture->getId();};
+        void setTexture(HgTexture* tex){m_texture = tex;}
+        uint32_t getTextureId(){return m_texture->getId();}
 
         void setPosition(glm::vec3 pos){m_position = pos;}
         void setRotation(glm::vec3 rot){m_rotation = rot;}
@@ -40,6 +40,7 @@ class Entity{
         
         virtual void onCollision(Entity* other);
         virtual void onCollision(); //specifically the mouse
+        virtual void onUpdate();
     
     protected:
         Mesh m_mesh;
@@ -49,7 +50,7 @@ class Entity{
         glm::vec3 m_rotation;
         glm::vec3 m_scale;
 
-        HgTexture* m_texture;
+        HgTexture* m_texture; //TODO: have a default texture
         hgLayer m_layer;
         uint32_t m_id;
         bool m_isDirty;

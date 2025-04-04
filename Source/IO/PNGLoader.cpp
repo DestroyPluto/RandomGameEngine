@@ -8,9 +8,7 @@
 using namespace io;
 using namespace core;
 
-PNGLoader::PNGLoader(RenderingPlugin* plugin){
-    if(plugin)
-        m_plugin = plugin;
+PNGLoader::PNGLoader(){
     stbi_set_flip_vertically_on_load(true);
 }
 

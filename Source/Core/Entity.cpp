@@ -1,5 +1,6 @@
 #include  "Entity.h"
 #include "Logger.h"
+#include "Config.h"
 
 using namespace core;
 
@@ -8,11 +9,11 @@ Entity::Entity(uint32_t id){
     m_position = glm::vec3(0.0f);
     m_rotation = glm::vec3(1.0f);
     m_scale = glm::vec3(1.0f);
+    m_mesh = Mesh();
 }
 
 //TODO
 bool Entity::intersects(Entity* other){
-
     return false;
 }
 //TODO: 3D collision
@@ -32,7 +33,6 @@ bool Entity::intersects(float x, float y, float z){
     return intersects(pos);
 }
 
-
 void Entity::onCollision(Entity* other){
     HgLogger::logMsg("entity collision triggered!");
 }
@@ -40,3 +40,7 @@ void Entity::onCollision(Entity* other){
 void Entity::onCollision(){
     HgLogger::logMsg("entity collision triggered!");
 }
+
+void Entity::onUpdate(){
+//do nothing
+};
