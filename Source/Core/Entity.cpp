@@ -42,5 +42,5 @@ void Entity::onCollision(){
 }
 
 void Entity::onUpdate(){
-//do nothing
+
 };

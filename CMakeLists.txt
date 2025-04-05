@@ -17,7 +17,6 @@ if(UNIX)
     set(GLFW_BUILD_WAYLAND false)
 endif(UNIX)
 
-
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} 
@@ -26,11 +25,10 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Include/glad
         ${PROJECT_SOURCE_DIR}/Include/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
-	    ${CMAKE_SOURCE_DIR}/Include/Core
-	    ${CMAKE_SOURCE_DIR}/Include/Math
+	      ${CMAKE_SOURCE_DIR}/Include/Core
+	      ${CMAKE_SOURCE_DIR}/Include/Math
         ${CMAKE_SOURCE_DIR}/Include/IO
-        
-
+        ${CMAKE_SOURCE_DIR}/Include/Client
 )
 
 # Specify the path to GLFW
@@ -45,6 +43,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/Source/RenderingGL")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Core")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Math")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/IO")
+add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Client")
 
 
 find_package( OpenGL REQUIRED)
@@ -54,6 +53,7 @@ target_link_libraries(${PROJECT_NAME}
  Core
  Math
  IO
+ Client
 )
 	# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")

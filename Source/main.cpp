@@ -15,11 +15,14 @@
 #include "Core/HgLogger.h"
 #include "Core/Config.h"
 #include "IO/SceneLoader.h"
+#include "Client/BehaviourManager.h"
+#include "Client/TestBehaviour.h"
 
 using namespace core;
 using namespace rendering;
 using namespace math;
 using namespace io;
+using namespace client;
 
 void key_callback(int key, int action){
     Keyboard::getInstance()->setKey(key, action);
@@ -45,15 +48,17 @@ class Game{
         void Run(){
             std::unique_ptr<Button> button = std::make_unique<Button>(0);
             button->setPosition({0.0f,0.0f,0});
+            
+            BehaviourManager::getInstance()->RegisterClientBehaviours();
             m_entities = SceneLoader::loadScene("Project/GameObjects.json");
             //TODO handle textures better
             PNGLoader loader = PNGLoader();
             
             //load the initial textures, or just the default one if it isn't set
-            for(Entity& e : m_entities){
-                std::string path = e.getTexturePath().empty() ? g_defaultTexturePath : e.getTexturePath();
+            for(Entity* e : m_entities){
+                std::string path = e->getTexturePath().empty() ? g_defaultTexturePath : e->getTexturePath();
                 HgTexture* tex =  loader.loadFromFile(path.c_str());
-                e.setTexture(tex);
+                e->setTexture(tex);
                 m_engine->addTexture(tex);
             }
 
@@ -72,20 +77,25 @@ class Game{
                 double mX, mY;
                 Mouse::getInstance()->getScreenPos(mX, mY);
         
-                for(Entity& e : m_entities){
-                    if(e.isDirty()){
-                        m_dirtyEnts.push_back(&e);
+                for(Entity* e : m_entities){
+                    e->onUpdate();
+                    if(e->isDirty()){
+                        m_dirtyEnts.push_back(e);
                     }
-                    if(e.getLayer() == core::eUI){
-                        if(e.intersects(mX,mY,0))
-                            e.onCollision();
+                    if(e->getLayer() == core::eUI){
+                        if(e->intersects(mX,mY,0))
+                            e->onCollision();
                     }
                 }
                 if(m_dirtyEnts.size() > 0){
                     m_engine->setDirtyEntities(m_dirtyEnts);
                 }
             }
-        
+            //cleanup
+            for(Entity* e : m_entities){
+                delete e;
+            }
+
             m_renderingThread.join();
             HgLogger::logMsg("closing!");
             m_engine->closePlugin();
@@ -94,7 +104,7 @@ class Game{
     private:
         std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>();
         std::thread m_renderingThread;
-        std::vector<Entity> m_entities = std::vector<Entity>();
+        std::vector<Entity*> m_entities = std::vector<Entity*>();
         std::vector<Entity*> m_dirtyEnts = std::vector<Entity*>();
 };
 

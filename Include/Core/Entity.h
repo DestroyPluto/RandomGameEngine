@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "HgTexture.h"
 #include <string>
+//#include "Behaviour.h"
 
 namespace core{
 
@@ -30,7 +31,7 @@ class Entity{
         void setTexturePath(std::string path){m_texturePath = path;}
         std::string getTexturePath(){return m_texturePath;}
 
-        void setPosition(glm::vec3 pos){m_position = pos;}
+        void setPosition(glm::vec3 pos){m_position = pos;m_isDirty = true;}
         void setRotation(glm::vec3 rot){m_rotation = rot;}
         void setScale(glm::vec3 scale){m_scale = scale;}
 
@@ -45,7 +46,7 @@ class Entity{
         virtual void onCollision(Entity* other);
         virtual void onCollision(); //specifically the mouse
         virtual void onUpdate();
-    
+
     protected:
         Mesh m_mesh;
 
@@ -59,5 +60,6 @@ class Entity{
         hgLayer m_layer;
         uint32_t m_id;
         bool m_isDirty;
+
 };
 }

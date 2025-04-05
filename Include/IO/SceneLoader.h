@@ -4,6 +4,30 @@
 namespace io{
     class SceneLoader{
         public:
-        static std::vector<core::Entity> loadScene(const char* path);
+        static std::vector<core::Entity*> loadScene(const char* path);
+        private:
+        struct sVec{
+            float x;
+            float y;
+            float z;
+        };
+        
+        struct sGameObject{
+            int Id;
+            sVec Position;
+            sVec Rotation;
+            sVec Scale;
+            std::string Texture;
+            std::string Behaviour;
+        };
+        
+        struct sScene{
+            std::vector<sGameObject> Objects;
+        };
+        
+        static glm::vec3 vecToVec3(sVec other){
+            return glm::vec3(other.x, other.y, other.z);
+        }
+        
     };
 }
