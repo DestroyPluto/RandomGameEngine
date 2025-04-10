@@ -185,7 +185,7 @@ void RenderingEngine::handleDirtyEnts(){
         return;
     for(Entity* ent : m_dirtyEntities){
         //check if we already have render commands for entity
-        if(m_renderCommands.contains(ent->getId())){
+        if(m_renderCommands.contains(ent->getId()) || m_TextRenderCommands.contains(ent->getId())){
             //there are two possible things that need updating: the geometry, or the coordinates (or both lol)
             //currently only updates the coords
             updateRenderCommand(ent);
@@ -236,7 +236,18 @@ void RenderingEngine::handleDirtyTextures(){
 }
 
 HgError RenderingEngine::updateRenderCommand(Entity* ent){
-    
+    DisplayText* txt = dynamic_cast<DisplayText*>(ent);
+    if(txt){        
+        auto textIndex = m_TextRenderCommands.find(ent->getId());
+        if(textIndex != m_TextRenderCommands.end()){
+            TextRenderCommand* rc = &(textIndex->second);
+            rc->setPosition(txt->getPosition());
+            rc->setText(txt->getText());
+            return HgError::eSuccess; 
+        }
+        return HgError::eFailure;
+    }
+
     auto index = m_renderCommands.find(ent->getId());
     if(index != m_renderCommands.end()){
         RenderCommand* rc = &(index->second);
@@ -244,6 +255,7 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
         rc->setTextureID(ent->getTextureId());
         return HgError::eSuccess;
     }
+
     return HgError::eFailure;
 }
 

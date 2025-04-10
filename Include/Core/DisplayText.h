@@ -11,8 +11,8 @@ class DisplayText : public Entity {
             setLayer(eText);
         }
         std::string getText(){return m_text;}
-        void setText(std::string text){m_text = text;}
-        
+        void setText(std::string text){m_text = text; setDirty(true);}
+
     private:
         std::string m_text;
 };

@@ -53,7 +53,9 @@ class Game{
             BehaviourManager::getInstance()->RegisterClientBehaviours();
             m_entities = SceneLoader::loadScene("Project/GameObjects.json");
 
-            DisplayText* text = new DisplayText("hello world!", 100);
+
+            std::string countText = "Count: " + std::to_string(m_count);
+            DisplayText* text = new DisplayText(countText, 100);
             m_entities.push_back(text);
 
             //TODO handle textures better
@@ -79,7 +81,9 @@ class Game{
                 shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
         
                 if(keyboard->isKeyDown(Keyboard::KEY_W)){
-                    button->setDirty(true);
+                    m_count++;
+                    std::string countText = "Count: " + std::to_string(m_count);
+                    text->setText(countText);
                 }
         
                 m_dirtyEnts.clear();
@@ -115,6 +119,7 @@ class Game{
         std::thread m_renderingThread;
         std::vector<Entity*> m_entities = std::vector<Entity*>();
         std::vector<Entity*> m_dirtyEnts = std::vector<Entity*>();
+        uint32_t m_count = 0;
 };
 
 int main(int args, char** argv)

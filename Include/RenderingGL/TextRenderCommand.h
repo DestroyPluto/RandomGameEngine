@@ -24,7 +24,7 @@ namespace rendering{
         //                     need it lol)
         
         void setPosition(glm::vec3 position){m_position = position;}
-
+        void setText(std::string text){m_text = text;}
     private:
             uint32_t m_globalID;
             std::string m_text;
