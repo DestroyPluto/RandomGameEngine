@@ -37,7 +37,13 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+SET(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+SET(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+
+set(FREETYPE_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/freetype-2.13.3")
+
 add_subdirectory(${GLFW_DIR})
+add_subdirectory(${FREETYPE_DIR})
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/RenderingGL")
 add_subdirectory("${CMAKE_SOURCE_DIR}/Source/Core")
@@ -54,6 +60,7 @@ target_link_libraries(${PROJECT_NAME}
  Math
  IO
  Client
+ freetype
 )
 	# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")

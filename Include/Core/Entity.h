@@ -9,7 +9,8 @@ namespace core{
 
 typedef enum {
     eUI = 1,
-    eWorld=2
+    eWorld = 2,
+    eText = 3
 } hgLayer;
 
 class Entity{
@@ -57,7 +58,7 @@ class Entity{
 
         HgTexture* m_texture; //TODO: have a default texture
         std::string m_texturePath;
-        hgLayer m_layer;
+        hgLayer m_layer = eWorld;
         uint32_t m_id;
         bool m_isDirty;
 

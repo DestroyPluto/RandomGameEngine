@@ -17,6 +17,7 @@
 #include "IO/SceneLoader.h"
 #include "Client/BehaviourManager.h"
 #include "Client/TestBehaviour.h"
+#include "Core/DisplayText.h"
 
 using namespace core;
 using namespace rendering;
@@ -51,11 +52,19 @@ class Game{
             
             BehaviourManager::getInstance()->RegisterClientBehaviours();
             m_entities = SceneLoader::loadScene("Project/GameObjects.json");
+
+            DisplayText* text = new DisplayText("hello world!", 100);
+            m_entities.push_back(text);
+
             //TODO handle textures better
             PNGLoader loader = PNGLoader();
             
             //load the initial textures, or just the default one if it isn't set
             for(Entity* e : m_entities){
+                if(e->getLayer() != eWorld){
+                    continue;
+                }
+
                 std::string path = e->getTexturePath().empty() ? g_defaultTexturePath : e->getTexturePath();
                 HgTexture* tex =  loader.loadFromFile(path.c_str());
                 e->setTexture(tex);

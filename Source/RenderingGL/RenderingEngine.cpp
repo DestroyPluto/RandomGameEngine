@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include "glad/glad.h"
 #include <HgLogger.h>
+#include "DisplayText.h"
 
 using namespace rendering;
 using namespace core;
@@ -95,6 +96,11 @@ HgError RenderingEngine::initPlugin() {
     glm::mat4 model = glm::mat4(1.0f);
     m_basicShader->setModelMatrix(model);
 
+    m_textShader = new TextShader();
+    m_textShader->bind();
+    m_textShader->setModelMatrix(model);
+    m_textShader->unBind();
+
     m_isInitialized = true;
     renderloop();
 
@@ -114,6 +120,7 @@ void RenderingEngine::renderloop(){
 
         //geometry pass - should probably move this into it's own thing.
         //should also have a different pass for each shader type.
+        m_basicShader->bind();
         for(auto rc = m_renderCommands.begin(); rc != m_renderCommands.end(); rc++){
             if(rc->second.getKey() < 1){
                 //m_basicShader->setProjectionMatrix(m_camera->getOrtho());
@@ -125,6 +132,16 @@ void RenderingEngine::renderloop(){
             }
             rc->second.execute(m_basicShader);
         }
+        m_basicShader->unBind();
+
+        m_textShader->bind();
+        for(auto rc = m_TextRenderCommands.begin(); rc != m_TextRenderCommands.end(); rc++){
+            m_textShader->setProjectionMatrix(m_camera->getOrtho());
+            m_textShader->setViewMatrix(glm::mat4(1.0));
+
+            rc->second.execute();
+        }
+        m_textShader->unBind();
 
         //update buffers
         glfwSwapBuffers(m_window);
@@ -230,16 +247,25 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
     return HgError::eFailure;
 }
 
-//note: should this pass in ent instead of mesh? ent has position data...
 HgError RenderingEngine::createRenderCommand(Entity* ent){
     //TODO: proper key generation.
     uint32_t key = ent->getLayer();
-    //create a render command
-    RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh(), ent->getTextureId(), key);
-    rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
-    //insert the rendercommand into the map
-    m_renderCommands.emplace(ent->getId(), std::move(rc));
-    HgLogger::logMsg("Created Render Command!");
 
+    //text entities have a different render command
+    if(ent->getLayer() == core::eText){
+        DisplayText* txt = dynamic_cast<DisplayText*>(ent);
+        if(txt){
+            TextRenderCommand rc = TextRenderCommand(txt->getId(), txt->getText());
+            rc.setPosition(txt->getPosition());
+            m_TextRenderCommands.emplace(txt->getId(), std::move(rc));
+        }
+    }else{
+        //create a render command
+        RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh(), ent->getTextureId(), key);
+        rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
+        //insert the rendercommand into the map
+        m_renderCommands.emplace(ent->getId(), std::move(rc));
+        HgLogger::logMsg("Created Render Command!");
+    } 
     return HgError::eSuccess;
 }

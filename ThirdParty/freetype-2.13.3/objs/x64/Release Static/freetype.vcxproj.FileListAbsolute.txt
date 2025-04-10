@@ -1,0 +1,1 @@
+D:\c++projects\Libraries\freetype-2.13.3\objs\x64\Release Static\freetype.lib

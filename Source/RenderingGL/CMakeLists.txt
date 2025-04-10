@@ -18,7 +18,7 @@ target_include_directories(RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
         ${CMAKE_SOURCE_DIR}/Include/Core 
 	    ${CMAKE_SOURCE_DIR}/Include/Math 
-        
+        FREE_TYPE_INCLUDES
 )
 
 find_package( OpenGL REQUIRED)
@@ -27,4 +27,5 @@ target_link_libraries(${PROJECT_NAME}
 glfw
 OpenGL::GL
 Math
+freetype
 )

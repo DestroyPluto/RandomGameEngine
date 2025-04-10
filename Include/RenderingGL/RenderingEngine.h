@@ -9,8 +9,10 @@
 #include <functional>
 
 #include "RenderCommand.h"
+#include "TextRenderCommand.h"
 #include "Entity.h"
 #include "BasicShader.h"
+#include "TextShader.h"
 #include "HgTexture.h"
 #include "Camera.h"
 
@@ -40,6 +42,7 @@ namespace rendering
 		std::mutex m_RenderingMutex;
 		std::unordered_set<core::Entity *> m_dirtyEntities;
 		std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
+		std::unordered_map<uint32_t, TextRenderCommand> m_TextRenderCommands;
 		std::unordered_map<const char*, core::HgTexture*> m_textures;
 		std::unordered_set<core::HgTexture*> m_dirtyTextures;
 		core::HgError createRenderCommand(core::Entity*);
@@ -47,7 +50,7 @@ namespace rendering
 		bool m_isInitialized = false;
 		//TODO: better solution for handling shaders
 		BasicShader* m_basicShader;
+		TextShader* m_textShader;
 		Camera* m_camera;
 	};
-
 }
