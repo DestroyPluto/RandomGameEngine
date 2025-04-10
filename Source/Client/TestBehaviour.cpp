@@ -1,5 +1,6 @@
 #include "TestBehaviour.h"
 #include "HgLogger.h"
+#include "GameTime.h"
 
 using namespace client;
 using namespace core;
@@ -9,7 +10,7 @@ void TestBehaviour::initialize(){
     HgLogger::logDebug("Test behaviour initialize called!, for object with id: %u", id);
 
     m_up = true;
-    m_speed = 0.000001f;
+    m_speed = 1.0f;
 
 }
 
@@ -29,9 +30,9 @@ void TestBehaviour::update(){
     }
 
     if(m_up)
-        pos.y += m_speed;
+        pos.y += (m_speed * GameTime::getDeltaTime());
     else
-        pos.y -= m_speed;
+        pos.y -= (m_speed * GameTime::getDeltaTime());
     
 m_parent->setPosition(pos);
 }

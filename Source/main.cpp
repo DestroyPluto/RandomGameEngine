@@ -2,7 +2,7 @@
 #include <memory>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include <chrono>
 #include "RenderingGL/RenderingEngine.h"
 #include "Core/RenderingPlugin.h"
 #include "Core/Entity.h"
@@ -18,6 +18,7 @@
 #include "Client/BehaviourManager.h"
 #include "Client/TestBehaviour.h"
 #include "Core/DisplayText.h"
+#include "Core/GameTime.h"
 
 using namespace core;
 using namespace rendering;
@@ -77,7 +78,16 @@ class Game{
         
             Keyboard* keyboard = Keyboard::getInstance();
             
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            auto lastTime = std::chrono::high_resolution_clock::now();
             while(!shouldEnd){
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime);
+
+                double deltaTime = (double)delta.count() * 0.000000001L;
+                GameTime::setDeltaTime(deltaTime);
+                lastTime = currentTime;
+
                 shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
         
                 if(keyboard->isKeyDown(Keyboard::KEY_W)){
