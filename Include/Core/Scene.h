@@ -9,6 +9,8 @@ public:
     Scene(std::vector<Entity*> entities, RenderingPlugin* engine);
     Scene() = default; //needed for std::move
     void update(RenderingPlugin* engine);
+    
+    std::vector<Entity*> getEntities(){return m_entities;}
 
 private:
     void loadTextures(RenderingPlugin* engine);

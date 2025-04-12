@@ -9,7 +9,9 @@ public:
     
     virtual void update(){}
     virtual void initialize(){}
-        
+    virtual void onClick(){}
+    
+    virtual const std::string getName(){return "";}
     core::Entity* m_parent;
 };
 }

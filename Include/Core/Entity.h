@@ -47,6 +47,7 @@ class Entity{
         virtual void onCollision(Entity* other);
         virtual void onCollision(); //specifically the mouse
         virtual void onUpdate();
+        virtual void onClick();
         virtual ~Entity();
 
     protected:

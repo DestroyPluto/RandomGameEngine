@@ -2,9 +2,10 @@
 #include <vector>
 #include "Entity.h"
 namespace io{
-    class SceneLoader{
+    class SceneIO{
         public:
         static std::vector<core::Entity*> loadScene(const char* path);
+        static void saveScene(const char* path, std::vector<core::Entity*> entities);
         private:
         struct sVec{
             float x;
@@ -27,6 +28,9 @@ namespace io{
         
         static glm::vec3 vecToVec3(sVec other){
             return glm::vec3(other.x, other.y, other.z);
+        }
+        static sVec vec3ToVec(glm::vec3 other){
+            return sVec {other.x, other.y, other.z};
         }
         
     };

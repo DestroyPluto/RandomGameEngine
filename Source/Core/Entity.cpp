@@ -47,4 +47,8 @@ void Entity::onCollision(){
 
 void Entity::onUpdate(){
 
-};
+}
+
+void Entity::onClick(){
+
+}

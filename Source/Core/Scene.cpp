@@ -34,7 +34,6 @@ void Scene::loadTextures(RenderingPlugin* engine){
 }
 
 void Scene::update(RenderingPlugin* engine){
-
     m_dirtyEnts.clear();
     double mX, mY;
     Mouse::getInstance()->getScreenPos(mX, mY);
@@ -43,10 +42,8 @@ void Scene::update(RenderingPlugin* engine){
         if(e->isDirty()){
             m_dirtyEnts.push_back(e);
         }
-        if(e->getLayer() == core::eUI){
-            if(e->intersects(mX,mY,0))
-                e->onCollision();
-        }
+        if(e->intersects(mX,mY,0))
+            e->onCollision();
     }
     
     if(m_dirtyEnts.size() > 0){

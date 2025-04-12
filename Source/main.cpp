@@ -10,11 +10,10 @@
 #include "Math/PointArray.h"
 #include "IO/Keyboard.h"
 #include "IO/Mouse.h"
-#include "Core/Button.h"
 #include "IO/PNGLoader.h"
 #include "Core/HgLogger.h"
 #include "Core/Config.h"
-#include "IO/SceneLoader.h"
+#include "IO/SceneIO.h"
 #include "Client/BehaviourManager.h"
 #include "Client/TestBehaviour.h"
 #include "Core/DisplayText.h"
@@ -65,6 +64,8 @@ class Game{
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto lastTime = std::chrono::high_resolution_clock::now();
             
+            bool flag = false;
+
             while(!shouldEnd){
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime);
@@ -76,7 +77,16 @@ class Game{
                 shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
                 Scene* currentScene = SceneManager::getInstance()->getCurrentScene();
                 if(currentScene)
-                    currentScene->update((RenderingPlugin*)m_engine.get());                
+                    currentScene->update((RenderingPlugin*)m_engine.get());
+
+                if(keyboard->isKeyDown(Keyboard::KEY_W)){
+                    if(!flag){
+                        SceneManager::getInstance()->saveScene("SaveSceneFile.json");
+                        flag = true;
+                    }
+                }else{
+                    flag = false;
+                }
             }
 
             m_renderingThread.join();

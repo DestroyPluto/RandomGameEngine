@@ -1,12 +1,12 @@
 #include "SceneManager.h"
-#include "SceneLoader.h"
+#include "SceneIO.h"
 
 using namespace client;
 using namespace core;
 using namespace io;
 
 HgError SceneManager::loadScene(std::string path, core::RenderingPlugin* engine){
-    SceneLoader loader = SceneLoader();
+    SceneIO loader = SceneIO();
     std::vector<Entity*> entities = loader.loadScene(path.c_str());
     
     if(entities.empty())
@@ -23,7 +23,10 @@ HgError SceneManager::loadScene(std::string path, core::RenderingPlugin* engine)
 }
 
 HgError SceneManager::saveScene(std::string path){
-    return HgError::eNotImplemented;
+    SceneIO loader = SceneIO();
+    loader.saveScene(path.c_str(), m_currentScene->getEntities());
+    
+    return HgError::eSuccess;
 }
 
 SceneManager::SceneManager(){

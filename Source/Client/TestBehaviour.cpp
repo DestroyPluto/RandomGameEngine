@@ -36,3 +36,7 @@ void TestBehaviour::update(){
     
 m_parent->setPosition(pos);
 }
+
+void TestBehaviour::onClick(){
+    HgLogger::logDebug("object Clicked!");
+}
