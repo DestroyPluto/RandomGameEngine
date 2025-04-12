@@ -12,6 +12,10 @@ Entity::Entity(uint32_t id){
     m_mesh = Mesh();
 }
 
+Entity::~Entity(){
+    HgLogger::logDebug("Entity destroyed");
+}
+
 //TODO
 bool Entity::intersects(Entity* other){
     return false;

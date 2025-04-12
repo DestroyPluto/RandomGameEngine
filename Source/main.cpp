@@ -19,6 +19,7 @@
 #include "Client/TestBehaviour.h"
 #include "Core/DisplayText.h"
 #include "Core/GameTime.h"
+#include "Client/SceneManager.h"
 
 using namespace core;
 using namespace rendering;
@@ -47,39 +48,23 @@ class Game{
             m_engine->m_mouseButtonCallback = &mouse_button_callback;
             m_renderingThread = m_engine->startPlugin();
         }
-        void Run(){
-            std::unique_ptr<Button> button = std::make_unique<Button>(0);
-            button->setPosition({0.0f,0.0f,0});
-            
-            BehaviourManager::getInstance()->RegisterClientBehaviours();
-            m_entities = SceneLoader::loadScene("Project/GameObjects.json");
 
-
-            std::string countText = "Count: " + std::to_string(m_count);
-            DisplayText* text = new DisplayText(countText, 100);
-            m_entities.push_back(text);
-
-            //TODO handle textures better
-            PNGLoader loader = PNGLoader();
-            
-            //load the initial textures, or just the default one if it isn't set
-            for(Entity* e : m_entities){
-                if(e->getLayer() != eWorld){
-                    continue;
-                }
-
-                std::string path = e->getTexturePath().empty() ? g_defaultTexturePath : e->getTexturePath();
-                HgTexture* tex =  loader.loadFromFile(path.c_str());
-                e->setTexture(tex);
-                m_engine->addTexture(tex);
-            }
-
+        void Run(){    
             bool shouldEnd = false;
+        
+            BehaviourManager::getInstance()->RegisterClientBehaviours();
+            HgError success = SceneManager::getInstance()->loadScene("Project/GameObjects.json", (RenderingPlugin*)m_engine.get());
+
+            if(success != HgError::eSuccess){
+                HgLogger::logError("Failed to load Scene! aborting");
+                shouldEnd = true;
+            }
         
             Keyboard* keyboard = Keyboard::getInstance();
             
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto lastTime = std::chrono::high_resolution_clock::now();
+            
             while(!shouldEnd){
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime);
@@ -89,34 +74,9 @@ class Game{
                 lastTime = currentTime;
 
                 shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
-        
-                if(keyboard->isKeyDown(Keyboard::KEY_W)){
-                    m_count++;
-                    std::string countText = "Count: " + std::to_string(m_count);
-                    text->setText(countText);
-                }
-        
-                m_dirtyEnts.clear();
-                double mX, mY;
-                Mouse::getInstance()->getScreenPos(mX, mY);
-        
-                for(Entity* e : m_entities){
-                    e->onUpdate();
-                    if(e->isDirty()){
-                        m_dirtyEnts.push_back(e);
-                    }
-                    if(e->getLayer() == core::eUI){
-                        if(e->intersects(mX,mY,0))
-                            e->onCollision();
-                    }
-                }
-                if(m_dirtyEnts.size() > 0){
-                    m_engine->setDirtyEntities(m_dirtyEnts);
-                }
-            }
-            //cleanup
-            for(Entity* e : m_entities){
-                delete e;
+                Scene* currentScene = SceneManager::getInstance()->getCurrentScene();
+                if(currentScene)
+                    currentScene->update((RenderingPlugin*)m_engine.get());                
             }
 
             m_renderingThread.join();
@@ -127,8 +87,7 @@ class Game{
     private:
         std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>();
         std::thread m_renderingThread;
-        std::vector<Entity*> m_entities = std::vector<Entity*>();
-        std::vector<Entity*> m_dirtyEnts = std::vector<Entity*>();
+
         uint32_t m_count = 0;
 };
 
