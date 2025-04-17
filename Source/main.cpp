@@ -19,6 +19,7 @@
 #include "Core/DisplayText.h"
 #include "Core/GameTime.h"
 #include "Client/SceneManager.h"
+#include "Client/GameManager.h"
 
 using namespace core;
 using namespace rendering;
@@ -65,7 +66,7 @@ class Game{
             auto lastTime = std::chrono::high_resolution_clock::now();
             
             bool flag = false;
-
+            GameManager game = GameManager();
             while(!shouldEnd){
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime);
@@ -75,6 +76,9 @@ class Game{
                 lastTime = currentTime;
 
                 shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
+
+                game.update();
+
                 Scene* currentScene = SceneManager::getInstance()->getCurrentScene();
                 if(currentScene)
                     currentScene->update((RenderingPlugin*)m_engine.get());
