@@ -29,6 +29,12 @@ HgError SceneManager::saveScene(std::string path){
     return HgError::eSuccess;
 }
 
+void SceneManager::changeScene(std::string path){
+    if(m_scenes.contains(path)){
+        m_currentScene = &m_scenes[path];
+    }
+}
+
 SceneManager::SceneManager(){
     m_scenes = std::unordered_map<std::string, core::Scene>();
 }

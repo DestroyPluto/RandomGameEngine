@@ -15,7 +15,7 @@ namespace client{
 
         core::HgError loadScene(std::string path, core::RenderingPlugin* engine);
         core::HgError saveScene(std::string path);
-        
+        void changeScene(std::string path);
         //void setScene(std::string name);
 
         core::Scene* getCurrentScene(){
