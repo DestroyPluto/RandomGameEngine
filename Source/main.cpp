@@ -15,7 +15,6 @@
 #include "Core/Config.h"
 #include "IO/SceneIO.h"
 #include "Client/BehaviourManager.h"
-#include "Client/TestBehaviour.h"
 #include "Core/DisplayText.h"
 #include "Core/GameTime.h"
 #include "Client/SceneManager.h"
@@ -53,20 +52,16 @@ class Game{
             bool shouldEnd = false;
         
             BehaviourManager::getInstance()->RegisterClientBehaviours();
-            HgError success = SceneManager::getInstance()->loadScene("Project/GameObjects.json", (RenderingPlugin*)m_engine.get());
-
-            if(success != HgError::eSuccess){
-                HgLogger::logError("Failed to load Scene! aborting");
-                shouldEnd = true;
-            }
-        
+  
             Keyboard* keyboard = Keyboard::getInstance();
             
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto lastTime = std::chrono::high_resolution_clock::now();
             
             bool flag = false;
+            SceneManager::getInstance()->setEngine((RenderingPlugin*) m_engine.get());
             GameManager game = GameManager();
+            
             while(!shouldEnd){
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime);
@@ -75,7 +70,7 @@ class Game{
                 GameTime::setDeltaTime(deltaTime);
                 lastTime = currentTime;
 
-                shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE);
+                shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE) || game.shouldEnd();
 
                 game.update();
 
@@ -83,14 +78,6 @@ class Game{
                 if(currentScene)
                     currentScene->update((RenderingPlugin*)m_engine.get());
 
-                if(keyboard->isKeyDown(Keyboard::KEY_W)){
-                    if(!flag){
-                        SceneManager::getInstance()->saveScene("SaveSceneFile.json");
-                        flag = true;
-                    }
-                }else{
-                    flag = false;
-                }
             }
 
             m_renderingThread.join();

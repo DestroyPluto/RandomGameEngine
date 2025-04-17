@@ -5,14 +5,14 @@ using namespace client;
 using namespace core;
 using namespace io;
 
-HgError SceneManager::loadScene(std::string path, core::RenderingPlugin* engine){
+HgError SceneManager::loadScene(std::string path){
     SceneIO loader = SceneIO();
     std::vector<Entity*> entities = loader.loadScene(path.c_str());
     
     if(entities.empty())
         return HgError::eFailure;
 
-    Scene scene = Scene(entities, engine);
+    Scene scene = Scene(entities, m_engine);
 
     m_scenes.emplace(path, std::move(scene));
 

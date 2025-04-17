@@ -13,7 +13,7 @@ namespace client{
             return &instance;
         }
 
-        core::HgError loadScene(std::string path, core::RenderingPlugin* engine);
+        core::HgError loadScene(std::string path);
         core::HgError saveScene(std::string path);
         void changeScene(std::string path);
         //void setScene(std::string name);
@@ -24,9 +24,11 @@ namespace client{
             return nullptr;
         }
 
+        void setEngine(core::RenderingPlugin* engine){m_engine = engine;}
     private:
         SceneManager();
         std::unordered_map<std::string, core::Scene> m_scenes;
         core::Scene* m_currentScene;
+        core::RenderingPlugin* m_engine;
     };
 }
