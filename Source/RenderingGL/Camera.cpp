@@ -17,5 +17,6 @@ using namespace rendering;
     }
 
     void Camera::setPosition(glm::vec3 translation){
-        m_position = translation;
+        m_position = translation * -1.0f;
+        m_position.z = -3.0f;
     }

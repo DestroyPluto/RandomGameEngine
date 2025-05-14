@@ -38,3 +38,11 @@ void SceneManager::changeScene(std::string path){
 SceneManager::SceneManager(){
     m_scenes = std::unordered_map<std::string, core::Scene>();
 }
+
+void SceneManager::setCameraPosition(glm::vec3 position){
+    m_engine->setCameraPos(position);
+}
+
+glm::vec3 SceneManager::getCameraPosition(){
+    return m_engine->getCameraPos();
+}

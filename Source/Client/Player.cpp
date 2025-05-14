@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Keyboard.h"
 #include "GameTime.h"
+#include "SceneManager.h"
 
 using namespace client;
 using namespace io;
@@ -36,4 +37,8 @@ void Player::handleMovement(){
     }
 
     m_parent->setPosition(pos);
+    glm::vec3 camPos = SceneManager::getInstance()->getCameraPosition();
+    camPos.x = pos.x;
+    camPos.y = pos.y;
+    SceneManager::getInstance()->setCameraPosition(camPos);
 }

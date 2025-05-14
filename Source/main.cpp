@@ -19,12 +19,15 @@
 #include "Core/GameTime.h"
 #include "Client/SceneManager.h"
 #include "Client/GameManager.h"
+#include <thread>
 
 using namespace core;
 using namespace rendering;
 using namespace math;
 using namespace io;
 using namespace client;
+using namespace std::chrono_literals;
+
 
 void key_callback(int key, int action){
     Keyboard::getInstance()->setKey(key, action);
@@ -58,10 +61,15 @@ class Game{
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto lastTime = std::chrono::high_resolution_clock::now();
             
-            bool flag = false;
             SceneManager::getInstance()->setEngine((RenderingPlugin*) m_engine.get());
             GameManager game = GameManager();
-            
+
+            //ensure engine is initialized before we start the game
+            while(!m_engine->isInitialized()){
+                std::this_thread::sleep_for(10ms);
+            }
+
+            m_engine->setCameraPos(glm::vec3(0.0f, 0.0f, 3.0f));
             while(!shouldEnd){
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime);

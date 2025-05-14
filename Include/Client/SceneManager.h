@@ -25,6 +25,11 @@ namespace client{
         }
 
         void setEngine(core::RenderingPlugin* engine){m_engine = engine;}
+
+        //TODO: should these maybe be in a better place?
+        void setCameraPosition(glm::vec3 position);
+        glm::vec3 getCameraPosition();
+
     private:
         SceneManager();
         std::unordered_map<std::string, core::Scene> m_scenes;

@@ -179,8 +179,12 @@ HgError RenderingEngine::closePlugin(){
 }
 
 HgError RenderingEngine::setCameraPos(glm::vec3 position){
-    m_camera->setPosition(position);
-    return HgError::eSuccess;
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    if(m_camera){
+        m_camera->setPosition(position);
+        return HgError::eSuccess;
+    }
+    return HgError::eFailure;
 }
 
 glm::vec3 RenderingEngine::getCameraPos(){
