@@ -26,6 +26,9 @@ add_executable(
 target_link_libraries (
     core_test
     GTest::gtest_main
+    Core
+    Math
+    IO
 )
 include(GoogleTest)
 gtest_discover_tests(core_test)
