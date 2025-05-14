@@ -30,6 +30,16 @@ class RenderingPlugin{
         */
         virtual HgError closePlugin() = 0;
         
+        /**
+        * Set the Camera position, in world coordinates
+        */
+        virtual HgError setCameraPos(glm::vec3 translation) = 0;
+        
+        /**
+         * get the Camera position, in world coordinates
+         */
+        virtual glm::vec3 getCameraPos() = 0;
+        
     protected:
         /**
         * called by startPlugin() should initialise everything and begin the render loop.

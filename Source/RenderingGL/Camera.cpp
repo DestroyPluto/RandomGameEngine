@@ -12,6 +12,10 @@ using namespace rendering;
 
     glm::mat4 Camera::getView(){
         glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
+        view = glm::translate(view, m_position);
         return view;
+    }
+
+    void Camera::setPosition(glm::vec3 translation){
+        m_position = translation;
     }

@@ -22,10 +22,14 @@ namespace rendering
 	{
 
 	public:
+		//override functions
 		virtual std::thread startPlugin() override;
 		virtual core::HgError setDirtyEntities(std::vector<core::Entity *> &entities) override;
 		virtual core::HgError addTexture(core::HgTexture* texture) override;
 		virtual core::HgError closePlugin() override;
+		virtual core::HgError setCameraPos(glm::vec3 translation) override;
+		virtual glm::vec3 getCameraPos() override;
+		
 		std::function<void(int, int)> m_keyCallback;
 		std::function<void(double, double)> m_mouseCallback;
 		std::function<void(int, int)> m_mouseButtonCallback;
