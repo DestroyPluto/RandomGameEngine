@@ -20,7 +20,7 @@ class RenderingPlugin{
 
         virtual HgError setDirtyEntities(std::vector<Entity*>& entities) = 0;
         /**
-         * load a texture/image into the rendering image
+         * load a texture/image into the rendering engine
          * [out] id - the image/texture ID
          */
         virtual HgError addTexture(core::HgTexture* tex) = 0;
