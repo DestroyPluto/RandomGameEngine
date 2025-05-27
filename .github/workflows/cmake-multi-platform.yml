@@ -55,7 +55,7 @@ jobs:
     - name: Install Dependencies
       shell: bash
       run: |
-        if ["${{ matrix.os }}"  = "ubuntu-latest"]; then
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
           sudo apt-get install -y xorg-dev
         fi
     - name: Configure CMake
@@ -78,7 +78,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       #run: ctest --build-config ${{ matrix.build_type }}
       #TODO: Investigate ctest some more, see if we can get it working with this...
-      run: core_test.exe
+      run: .\core_test.exe
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4.6.2
