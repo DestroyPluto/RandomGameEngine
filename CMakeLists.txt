@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.19)
 
 project(Mercury)
 
+enable_testing()
+
 #TODO: implement this properly
 file(GLOB SOURCES "Source/*.cpp"
     "Source/*.c"
@@ -13,7 +15,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(CMAKE_CXX_STANDARD 20)
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fPIC")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
     set(GLFW_BUILD_WAYLAND false)
 endif(UNIX)
 

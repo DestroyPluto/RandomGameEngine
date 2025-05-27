@@ -14,7 +14,7 @@ namespace io{
         };
         
         struct sGameObject{
-            int Id;
+            uint32_t Id;
             sVec Position;
             sVec Rotation;
             sVec Scale;

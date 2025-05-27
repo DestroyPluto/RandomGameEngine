@@ -14,8 +14,9 @@ target_include_directories(Core
 )
 
 #file(GLOB CORE_TEST_SOURCES "Test/*.cpp")
-
-enable_testing()
+include(GoogleTest)
+include(CTest)
+#enable_testing()
 
 add_executable(
      core_test
@@ -30,5 +31,5 @@ target_link_libraries (
     Math
     IO
 )
-include(GoogleTest)
+
 gtest_discover_tests(core_test)

@@ -1,5 +1,5 @@
 #include "SceneManager.h"
-#include "SceneIO.h"
+#include <SceneIO.h>
 
 using namespace client;
 using namespace core;
@@ -24,7 +24,8 @@ HgError SceneManager::loadScene(std::string path){
 
 HgError SceneManager::saveScene(std::string path){
     SceneIO loader = SceneIO();
-    loader.saveScene(path.c_str(), m_currentScene->getEntities());
+    std::vector<Entity*> ents = m_currentScene->getEntities();
+    loader.saveScene(path.c_str(), ents);
     
     return HgError::eSuccess;
 }

@@ -68,7 +68,6 @@ void SceneIO::saveScene(const char* path, std::vector<core::Entity*> entities){
         scene.Objects.push_back(obj);
     }
 
-    glz::write_file_json(scene, path, std::string{});
+    glz::error_ctx err = glz::write_file_json(scene, path, std::string{});
 
-    return;
 }

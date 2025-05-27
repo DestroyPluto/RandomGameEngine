@@ -61,7 +61,7 @@ TextRenderCommand::TextRenderCommand(uint32_t globalID, std::string text){
                 texture,
                 glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
                 glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                face->glyph->advance.x
+                static_cast<uint32_t>(face->glyph->advance.x)
             };
             g_characters.insert(std::pair<char, sCharacter>(c, character));
         }
