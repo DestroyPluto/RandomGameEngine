@@ -4,7 +4,7 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: [ "Main-Dev" ]
+    branches: [ "Fixing-Actions" ]
   pull_request:
     branches: [ "Main-Dev" ]
 
