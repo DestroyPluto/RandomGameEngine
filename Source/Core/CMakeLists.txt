@@ -30,5 +30,7 @@ target_link_libraries (
     Math
     IO
 )
+
 include(GoogleTest)
 gtest_discover_tests(core_test)
+add_test(CORE_TEST core_test)
