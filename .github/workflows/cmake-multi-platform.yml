@@ -25,14 +25,14 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release, Debug]
         #build_type: [Debug] #just do the one while we are figuring things out
-        c_compiler: [clang, cl]
+        c_compiler: [gcc, cl]
         include:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
           - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+            c_compiler: gcc
+            cpp_compiler: g++
         exclude:
           - os: windows-latest
             c_compiler: gcc
