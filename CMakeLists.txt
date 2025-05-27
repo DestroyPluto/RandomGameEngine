@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.19)
 
 project(Mercury)
 
+enable_testing()
+
 #TODO: implement this properly
 file(GLOB SOURCES "Source/*.cpp"
     "Source/*.c"
