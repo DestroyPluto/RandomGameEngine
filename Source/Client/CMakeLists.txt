@@ -12,9 +12,11 @@ PUBLIC
     ${CMAKE_SOURCE_DIR}/Include/Client
     ${CMAKE_SOURCE_DIR}/Include/Core
     ${CMAKE_SOURCE_DIR}/Include/Math
+    ${CMAKE_SOURCE_DIR}/Include/IO
 
 )
 
 target_link_libraries(${PROJECT_NAME} 
 	Core
+    IO
 )
