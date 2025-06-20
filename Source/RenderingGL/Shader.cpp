@@ -5,9 +5,13 @@
 #include <iostream>
 #include <glm/vec3.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <Config.h>
+#include <HgLogger.h>
 
 using namespace rendering;
+using namespace core;
+
+static const std::string CONFIG_SHADER_BASE_PATH = "configShaderBasePath";
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath){
     
@@ -19,10 +23,14 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
     
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
+    std::string shaderBasePath = Config::getInstance()->getOption(CONFIG_SHADER_BASE_PATH, "../Source/RenderingGL/Shaders/");
     try {
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
+        std::string shaderFullpath = shaderBasePath + vertexPath;
+        HgLogger::logDebug("shader: base path: %s", shaderBasePath.c_str());
+        HgLogger::logDebug("Shader: Reading vertex shader from: %s", shaderFullpath.c_str());
+
+        vShaderFile.open(shaderFullpath);
+        fShaderFile.open(shaderBasePath + fragmentPath);
         std::stringstream vShaderStream, fShaderStream;
 
         vShaderStream << vShaderFile.rdbuf();

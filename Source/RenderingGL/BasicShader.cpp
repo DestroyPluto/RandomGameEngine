@@ -3,7 +3,7 @@
 using namespace rendering;
 
 BasicShader::BasicShader()
-: Shader("../Source/RenderingGL/Shaders/vertex.vs", "../Source/RenderingGL/Shaders/fragment.fs")
+: Shader("vertex.vs", "fragment.fs")
 {
     Shader::bind();
     //set default colour

@@ -3,7 +3,7 @@
 using namespace rendering;
 
 TextShader::TextShader() 
-: Shader("../Source/RenderingGL/Shaders/TextShader.vs", "../Source/RenderingGL/Shaders/TextShader.fs"){
+: Shader("TextShader.vs", "TextShader.fs"){
     Shader::bind();
     //set default colour
     setColour(1.0f, 1.0f, 1.0f);
