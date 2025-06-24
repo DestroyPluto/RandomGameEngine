@@ -86,6 +86,11 @@ class Game{
                 if(currentScene)
                     currentScene->update((RenderingPlugin*)m_engine.get());
 
+
+                if(keyboard->isKeyDown(Keyboard::KEY_F6)){
+                    HgLogger::logMsg("Saving config from main...");
+                    m_config->saveToFile("./config.cfg");
+                }
             }
 
             m_renderingThread.join();
@@ -94,10 +99,12 @@ class Game{
             m_engine.reset();
         }
     private:
-        std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>();
+        std::shared_ptr<Config> m_config = std::make_shared<Config>();
+        std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>(m_config);
         std::thread m_renderingThread;
 
         uint32_t m_count = 0;
+
 };
 
 int main(int args, char** argv)

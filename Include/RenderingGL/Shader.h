@@ -3,12 +3,13 @@
 #include <glad/glad.h>
 #include <string>
 #include <glm/mat4x4.hpp>
+#include <Config.h>
 
 namespace rendering{
 class Shader {
 public:
     uint32_t m_id;
-    Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(const char* vertexPath, const char* fragmentPath, std::shared_ptr<core::Config> config);
     void bind();
     void unBind();
 

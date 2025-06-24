@@ -29,7 +29,7 @@ void Scene::loadTextures(RenderingPlugin* engine){
            continue;
        }
 
-       std::string path = e->getTexturePath().empty() ? Config::getInstance()->getOption(CONFIG_DEFAULT_TEXTURE, "redChecker.png") : e->getTexturePath();
+       std::string path = e->getTexturePath().empty() ? engine->getConfig()->getOption(CONFIG_DEFAULT_TEXTURE, "redChecker.png") : e->getTexturePath();
        HgTexture* tex =  loader.loadFromFile(path.c_str());
        e->setTexture(tex);
        engine->addTexture(tex);

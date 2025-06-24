@@ -3,7 +3,7 @@
 #include "HgError.h"
 #include <thread>
 #include "Entity.h"
-
+#include "Config.h"
 //might make sense to move this into the rendering namespace... but I want it as part of the core static library so that everyone can use it.
 namespace core {
 
@@ -39,7 +39,12 @@ class RenderingPlugin{
          * get the Camera position, in world coordinates
          */
         virtual glm::vec3 getCameraPos() = 0;
-        
+
+        /**
+         * get the config for the rendering plugin.
+         */
+        virtual	std::shared_ptr<Config> getConfig()  = 0;
+
     protected:
         /**
         * called by startPlugin() should initialise everything and begin the render loop.

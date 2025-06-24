@@ -13,7 +13,7 @@ using namespace core;
 
 static const std::string CONFIG_SHADER_BASE_PATH = "configShaderBasePath";
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath){
+Shader::Shader(const char* vertexPath, const char* fragmentPath, std::shared_ptr<core::Config> config) {
     
     //read shaders
     std::string vertexCode;
@@ -23,7 +23,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
     
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    std::string shaderBasePath = Config::getInstance()->getOption(CONFIG_SHADER_BASE_PATH, "../Source/RenderingGL/Shaders/");
+    std::string shaderBasePath = config->getOption(CONFIG_SHADER_BASE_PATH, "../Source/RenderingGL/Shaders/");
     try {
         std::string shaderFullpath = shaderBasePath + vertexPath;
         HgLogger::logDebug("shader: base path: %s", shaderBasePath.c_str());

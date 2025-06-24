@@ -2,8 +2,8 @@
 
 using namespace rendering;
 
-TextShader::TextShader() 
-: Shader("TextShader.vs", "TextShader.fs"){
+TextShader::TextShader(std::shared_ptr<core::Config> config) 
+: Shader("TextShader.vs", "TextShader.fs", config){
     Shader::bind();
     //set default colour
     setColour(1.0f, 1.0f, 1.0f);

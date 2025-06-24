@@ -93,6 +93,7 @@
         "stdfloat": "cpp",
         "variant": "cpp",
         "xtree": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "regex": "cpp"
     }
 }
