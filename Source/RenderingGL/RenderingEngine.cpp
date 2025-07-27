@@ -7,7 +7,7 @@
 #include "glad/glad.h"
 #include <HgLogger.h>
 #include "DisplayText.h"
-#include "config.h"
+#include "Config.h"
 
 
 using namespace rendering;
