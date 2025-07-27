@@ -4,6 +4,8 @@
 #include <string>
 #include <glm/mat4x4.hpp>
 #include <Config.h>
+#include <memory>
+
 
 namespace rendering{
 class Shader {
