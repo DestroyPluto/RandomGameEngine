@@ -1,0 +1,45 @@
+{
+"Objects" : [
+  {
+    "Id": 1,
+    "Position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "Scale": {
+      "x": 2.0,
+      "y": 2.0,
+      "z": 2.0
+    },
+    "Texture": "redChecker.png",
+    "Behaviour": ""
+  },
+  {
+    "Id": 0,
+    "Position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "Scale": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5
+    },
+    "Texture": "",
+    "Behaviour": "Player"
+  }
+  
+  ]
+}
