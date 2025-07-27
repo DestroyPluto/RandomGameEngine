@@ -4,6 +4,7 @@
 #include <thread>
 #include "Entity.h"
 #include "Config.h"
+#include <memory>
 //might make sense to move this into the rendering namespace... but I want it as part of the core static library so that everyone can use it.
 namespace core {
 
