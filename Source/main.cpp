@@ -86,11 +86,6 @@ class Game{
                 if(currentScene)
                     currentScene->update((RenderingPlugin*)m_engine.get());
 
-
-                if(keyboard->isKeyDown(Keyboard::KEY_F6)){
-                    HgLogger::logMsg("Saving config from main...");
-                    m_config->saveToFile("./config.cfg");
-                }
             }
 
             m_renderingThread.join();

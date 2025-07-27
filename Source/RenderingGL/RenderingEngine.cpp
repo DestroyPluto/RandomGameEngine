@@ -162,11 +162,6 @@ void RenderingEngine::renderloop(){
         //load any textures
         handleDirtyTextures();
 
-        if(glfwGetKey(m_window, GLFW_KEY_F5) == GLFW_PRESS){
-            HgLogger::logMsg("Saving config...");
-            m_config->saveToFile("./config.cfg");
-        }
-
     }
     //make sure to tell the main thread we are exiting
     m_keyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS);
