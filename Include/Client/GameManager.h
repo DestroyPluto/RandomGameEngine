@@ -1,9 +1,11 @@
 #pragma once
+#include "Config.h"
+#include <memory>
 
 namespace client{
     class GameManager{
         public:
-        GameManager();
+        GameManager(std::shared_ptr<core::Config> config);
         void update();
         bool shouldEnd(){return m_shouldEnd;}
 

@@ -2,8 +2,8 @@
 #include <glm/vec3.hpp>
 using namespace rendering;
 
-BasicShader::BasicShader()
-: Shader("../Source/RenderingGL/Shaders/vertex.vs", "../Source/RenderingGL/Shaders/fragment.fs")
+BasicShader::BasicShader(std::shared_ptr<core::Config> config)
+: Shader("vertex.vs", "fragment.fs", config)
 {
     Shader::bind();
     //set default colour

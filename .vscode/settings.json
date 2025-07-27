@@ -92,6 +92,8 @@
         "span": "cpp",
         "stdfloat": "cpp",
         "variant": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "source_location": "cpp",
+        "regex": "cpp"
     }
 }

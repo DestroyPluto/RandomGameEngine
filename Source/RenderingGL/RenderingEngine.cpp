@@ -7,6 +7,8 @@
 #include "glad/glad.h"
 #include <HgLogger.h>
 #include "DisplayText.h"
+#include "Config.h"
+
 
 using namespace rendering;
 using namespace core;
@@ -57,6 +59,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     renderingEngine->m_mouseButtonCallback(button, action);
 }
 
+RenderingEngine::RenderingEngine(std::shared_ptr<core::Config> config){
+    m_config = config;
+    //these cannot be initialised until after opengl has been initialised
+    m_window = nullptr;
+    m_camera = nullptr;
+    m_basicShader = nullptr;
+    m_textShader = nullptr;
+}
 
 HgError RenderingEngine::initPlugin() {
     //init glfw
@@ -89,14 +99,14 @@ HgError RenderingEngine::initPlugin() {
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
-    m_basicShader = new BasicShader();
+    m_basicShader = new BasicShader(m_config);
     m_basicShader->bind();
     
     m_basicShader->setColour(0.5f,0.0f,0.0f);
     glm::mat4 model = glm::mat4(1.0f);
     m_basicShader->setModelMatrix(model);
 
-    m_textShader = new TextShader();
+    m_textShader = new TextShader(m_config);
     m_textShader->bind();
     m_textShader->setModelMatrix(model);
     m_textShader->unBind();
@@ -145,7 +155,6 @@ void RenderingEngine::renderloop(){
 
         //update buffers
         glfwSwapBuffers(m_window);
-
 
         //update entities for the next frame
         handleDirtyEnts();

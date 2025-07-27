@@ -27,5 +27,6 @@ target_link_libraries(${PROJECT_NAME}
 glfw
 OpenGL::GL
 Math
+Core
 freetype
 )

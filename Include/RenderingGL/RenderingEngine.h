@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
+#include <memory>
 
 #include "RenderCommand.h"
 #include "TextRenderCommand.h"
@@ -36,6 +37,12 @@ namespace rendering
 		bool isInitialized(){std::lock_guard<std::mutex>lock(m_RenderingMutex); return m_isInitialized;}
 		
 		Camera* getCamera(){return m_camera;}
+		RenderingEngine(std::shared_ptr<core::Config> config);
+		
+		virtual std::shared_ptr<core::Config> getConfig() override{
+			return m_config;
+		}
+
 	protected:
 		virtual core::HgError initPlugin() override;
 		void renderloop();
@@ -56,5 +63,6 @@ namespace rendering
 		BasicShader* m_basicShader;
 		TextShader* m_textShader;
 		Camera* m_camera;
+		std::shared_ptr<core::Config> m_config;
 	};
 }

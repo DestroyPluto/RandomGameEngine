@@ -62,7 +62,7 @@ class Game{
             auto lastTime = std::chrono::high_resolution_clock::now();
             
             SceneManager::getInstance()->setEngine((RenderingPlugin*) m_engine.get());
-            GameManager game = GameManager();
+            GameManager game = GameManager(m_config);
 
             //ensure engine is initialized before we start the game
             while(!m_engine->isInitialized()){
@@ -94,10 +94,12 @@ class Game{
             m_engine.reset();
         }
     private:
-        std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>();
+        std::shared_ptr<Config> m_config = std::make_shared<Config>();
+        std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>(m_config);
         std::thread m_renderingThread;
 
         uint32_t m_count = 0;
+
 };
 
 int main(int args, char** argv)

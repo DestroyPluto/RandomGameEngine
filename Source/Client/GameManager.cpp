@@ -5,8 +5,11 @@
 using namespace client;
 using namespace core;
 
-GameManager::GameManager(){
-    HgError success = SceneManager::getInstance()->loadScene("Project/SceneOne.json");
+static const std::string CONFIG_STARTING_SCENE_FILE_PATH = "startingSceneFilePath";
+
+GameManager::GameManager(std::shared_ptr<core::Config> config){
+    std::string scenePath = config->getOption(CONFIG_STARTING_SCENE_FILE_PATH, "Project/SceneOne.json");
+    HgError success = SceneManager::getInstance()->loadScene(scenePath);
 
             if(success != HgError::eSuccess){
                 HgLogger::logError("Failed to load Scene! aborting");

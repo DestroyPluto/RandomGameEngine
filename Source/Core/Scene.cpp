@@ -6,9 +6,12 @@
 using namespace core;
 using namespace io;
 
+static const std::string CONFIG_DEFAULT_TEXTURE = "ConfigDefaultTexture";
+
 Scene::Scene(std::vector<Entity*> entities, RenderingPlugin* engine){
     m_entities = entities;
     loadTextures(engine);
+
 }
 
 /*Scene::Scene(){
@@ -26,7 +29,7 @@ void Scene::loadTextures(RenderingPlugin* engine){
            continue;
        }
 
-       std::string path = e->getTexturePath().empty() ? g_defaultTexturePath : e->getTexturePath();
+       std::string path = e->getTexturePath().empty() ? engine->getConfig()->getOption(CONFIG_DEFAULT_TEXTURE, "redChecker.png") : e->getTexturePath();
        HgTexture* tex =  loader.loadFromFile(path.c_str());
        e->setTexture(tex);
        engine->addTexture(tex);
