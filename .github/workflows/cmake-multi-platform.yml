@@ -84,6 +84,7 @@ jobs:
     - name: copy files To bin
       run: |
         cp ${{ github.workspace}}/DefaultFiles/* ${{ github.workspace}}/bin/ -r
+        mkdir ${{ github.workspace}}/bin/Shaders
         cp ${{ github.workspace}}/Source/RenderingGL/Shaders/* ${{ github.workspace}}/bin/Shaders -r
         
     - name: Upload exe to artifact
