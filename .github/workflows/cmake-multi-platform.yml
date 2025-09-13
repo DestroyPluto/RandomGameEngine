@@ -1,13 +1,17 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms
+name: Build
 
 on:
   push:
     branches: [ "Main-Dev" ]
   pull_request:
     branches: [ "Main-Dev" ]
-
+  workflow_dispatch:
+  
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -76,7 +80,10 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
-      
+
+    - name: copy files To bin
+      run: cp ${{ github.workspace}}/DefaultFiles/* ${{ github.workspace}}/bin/ -r
+        
     - name: Upload exe to artifact
       uses: actions/upload-artifact@v4.6.2
       with:
