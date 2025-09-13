@@ -11,7 +11,7 @@ namespace io{
             
             void setKey(int key, int action);
             bool isKeyDown(int key);
-
+            bool getKeyPressed(int key);
             //default operators
             Keyboard(Keyboard const&) = delete;
             void operator=(Keyboard const&) = delete;

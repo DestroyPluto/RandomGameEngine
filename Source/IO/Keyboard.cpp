@@ -17,10 +17,24 @@ Keyboard::~Keyboard(){
 }
 
 bool Keyboard::isKeyDown(int key){
-    return (m_keys[key] == PRESS);
+    return (m_keys[key] == PRESS || m_keys[key] == REPEAT);
+}
+
+bool Keyboard::getKeyPressed(int key){
+    return m_keys[key] == PRESS;
 }
 
 void Keyboard::setKey(int key, int action){
+    if (key > KEY_LAST || key < 0) {
+        HgLogger::logError("Key %d is out of range!", key);
+        return;
+    }
+    if(m_keys[key] == PRESS && action != RELEASE){
+        //we already registered this key as pressed, so it must be a repeat
+        m_keys[key] = REPEAT;
+        return;
+    }
+
     //we only care if it was pressed or released
     if(action == UNKNOWN || action == REPEAT)
         return;
