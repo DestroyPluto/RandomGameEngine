@@ -31,3 +31,8 @@ staticAnalysis-cppcheck-build-dir/*
 Source/Core/Core.lib
 ThirdParty/glfw-3.4/src/glfw3ConfigVersion.cmake
 staticAnalysis.cppcheck
+/.vs/PracticeProject/v17
+/.vs/PracticeProject/FileContentIndex
+/.vs/PracticeProject/CopilotIndices
+/.vs/PracticeProject/copilot-chat/7cb87986/sessions
+/out/build/x64-Debug
