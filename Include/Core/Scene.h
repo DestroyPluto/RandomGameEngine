@@ -11,7 +11,7 @@ public:
     void update(RenderingPlugin* engine);
     
     std::vector<Entity*> getEntities(){return m_entities;}
-
+    void AddEntity(Entity* ent) { m_entities.push_back(ent); }
 private:
     void loadTextures(RenderingPlugin* engine);
 

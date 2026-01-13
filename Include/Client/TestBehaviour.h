@@ -1,7 +1,7 @@
 #pragma once
 #include "Behaviour.h"
 namespace client{
-    class TestBehaviour : public core::Behaviour{
+    class TestBehaviour : public core::Behaviour {
         public:
 
         virtual void update() override;
