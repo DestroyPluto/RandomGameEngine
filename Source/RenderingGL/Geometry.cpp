@@ -8,36 +8,44 @@ Geometry::Geometry(uint32_t globalId){
     glGenVertexArrays(1, &m_vaoId);
 }
 
-//maybe make this a template?
+// existing convenience: default float attributes use 3 components
 void Geometry::addAttribute(Attribute attrib, std::vector<float> attribData){
-    
-    //could possibly change this to a switch statement?
-  //  if(attrib == aVertex){
-        m_vertexCount = attribData.size() / 3; //TODO magic numbers :/
+    addAttribute(attrib, attribData, 3);
+}
 
-        glBindVertexArray(m_vaoId);
-        
-        unsigned int VBO;
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, attribData.size() * sizeof(float), attribData.data(), GL_STATIC_DRAW);
+// new overload that accepts component count
+void Geometry::addAttribute(Attribute attrib, std::vector<float> attribData, int components){
+    if(attribData.empty() || components <= 0) return;
+
+    // Only set vertex count when supplying vertex positions
+    if(attrib == aVertex){
+        m_vertexCount = static_cast<uint32_t>(attribData.size()) / static_cast<uint32_t>(components);
+    }
+
+    glBindVertexArray(m_vaoId);
     
-        glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(attrib);
-        glBindVertexArray(0); //reset state
-  //  }
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, attribData.size() * sizeof(float), attribData.data(), GL_STATIC_DRAW);
+
+    // components used here (3 for vertex/normals, 2 for texcoords if needed)
+    glVertexAttribPointer(static_cast<GLuint>(attrib), components, GL_FLOAT, GL_FALSE, components * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(attrib));
+    glBindVertexArray(0); //reset state
 }
 
 void Geometry::addAttribute(Attribute attrib, std::vector<unsigned int> attribData){
-        glBindVertexArray(m_vaoId);
-        unsigned int VBO;
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, attribData.size() * sizeof(unsigned int), attribData.data(), GL_STATIC_DRAW);
-    
-        glVertexAttribPointer(attrib, 2, GL_UNSIGNED_INT, GL_FALSE, 0, (void*)0);
-        glEnableVertexAttribArray(attrib);
-        glBindVertexArray(0); //reset state
+    if(attribData.empty()) return;
+    glBindVertexArray(m_vaoId);
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, attribData.size() * sizeof(unsigned int), attribData.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(static_cast<GLuint>(attrib), 2, GL_UNSIGNED_INT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(attrib));
+    glBindVertexArray(0); //reset state
 }
 
 void Geometry::setIndices(std::vector<unsigned int> indices){

@@ -3,6 +3,8 @@
 #include <SceneManager.h>
 #include <algorithm>
 #include <cmath>
+#include <glm/glm.hpp>
+#include <vector>
 
 using namespace client;
 using namespace core;
@@ -47,7 +49,7 @@ void TerrainGenerator::createMesh(){
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
             float z = iz * lengthSpacing - halfLength; // centered Z
             //TODO: add height generation logic here
-            float y = std::sin(x + z) / 2.0f;
+            float y = std::sin(x * z) / 10.0f;
             points.push_back(Point(x, y, z));
         }
     }
@@ -76,8 +78,65 @@ void TerrainGenerator::createMesh(){
 
     HgLogger::logDebug("Generated %zu indices for terrain mesh.", indices.size());
 
+    // Set vertex positions on mesh
     terrainMesh.setPoints(points, false);
     terrainMesh.setIndices(indices);
+
+    // --- Compute vertex normals ---
+    // Convert point array to float vector for easy indexed access (x,y,z)
+    std::vector<float> posFloats = points.toFloatVector();
+    const size_t vertexCount = posFloats.size() / 3;
+    std::vector<glm::vec3> normalAcc(vertexCount, glm::vec3(0.0f));
+
+    // For each triangle, compute face normal (area-weighted) and accumulate to each vertex
+    for (size_t i = 0; i + 2 < indices.size(); i += 3) {
+        unsigned int i0 = indices[i + 0];
+        unsigned int i1 = indices[i + 1];
+        unsigned int i2 = indices[i + 2];
+
+        glm::vec3 v0(
+            posFloats[i0 * 3 + 0],
+            posFloats[i0 * 3 + 1],
+            posFloats[i0 * 3 + 2]
+        );
+        glm::vec3 v1(
+            posFloats[i1 * 3 + 0],
+            posFloats[i1 * 3 + 1],
+            posFloats[i1 * 3 + 2]
+        );
+        glm::vec3 v2(
+            posFloats[i2 * 3 + 0],
+            posFloats[i2 * 3 + 1],
+            posFloats[i2 * 3 + 2]
+        );
+
+        glm::vec3 edge1 = v1 - v0;
+        glm::vec3 edge2 = v2 - v0;
+        glm::vec3 faceNormal = glm::cross(edge1, edge2); // area-weighted
+
+        normalAcc[i0] += faceNormal;
+        normalAcc[i1] += faceNormal;
+        normalAcc[i2] += faceNormal;
+    }
+
+    // Normalize accumulated normals and create PointArray for normals
+    PointArray normals;
+    normals = PointArray(); // ensure default constructed
+    for (size_t vi = 0; vi < vertexCount; ++vi) {
+        glm::vec3 n = normalAcc[vi];
+        float len = glm::length(n);
+        if (len > 1e-6f) {
+            n = glm::normalize(n);
+        } else {
+            // Fallback normal (up)
+            n = glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+        normals.push_back(Point(n.x, n.y, n.z));
+    }
+
+    terrainMesh.setNormals(normals);
+
+    HgLogger::logDebug("Generated %zu normals for terrain mesh.", vertexCount);
 
     m_parent->setDirty(true);
     m_parent->setMesh(terrainMesh);

@@ -7,6 +7,7 @@ namespace rendering{
     typedef enum{
         aVertex = 0,
         aTexture = 1,
+        aNormal = 2,
     } Attribute;
 
 class Geometry{
@@ -14,6 +15,7 @@ class Geometry{
 public:
     Geometry(uint32_t globalId);
     void addAttribute(Attribute attrib, std::vector<float> attribData);
+    void addAttribute(Attribute attrib, std::vector<float> attribData, int components);
     void addAttribute(Attribute attrib, std::vector<unsigned int> attribData);
     void drawGeometry();
     void addTexture(uint32_t texID){m_textureId = texID;};
