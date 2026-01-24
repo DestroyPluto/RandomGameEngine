@@ -9,8 +9,8 @@ using namespace core;
 using namespace math;
 
 void TerrainGenerator::initialize(){
-    m_width = 50.0f;
-    m_length = 50.0f;
+    m_width = 10.0f;
+    m_length = 10.0f;
     m_maxHeight = 2.0f;
     HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
     createMesh();
@@ -26,7 +26,7 @@ void TerrainGenerator::createMesh(){
     // Choose how many samples (vertices) per unit length.
     // Increase samplesPerUnit to make spacing smaller (more vertices).
     // Example: samplesPerUnit = 10 -> 10 samples per unit length (segments), vertices = segments + 1
-    const int samplesPerUnit = 10;
+    const int samplesPerUnit = 5;
 
     //generate points
     m_vertexCountX = std::max(2, static_cast<int>(std::ceil(m_width * samplesPerUnit)) + 1);

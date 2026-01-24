@@ -48,6 +48,6 @@ void Player::handleMovement(){
     glm::vec3 camPos = SceneManager::getInstance()->getCameraPosition();
     camPos.x = pos.x;
     camPos.y = pos.y;
-    camPos.z = pos.z + 5.0f;
+    camPos.z = pos.z + 2.0f;
     SceneManager::getInstance()->setCameraPosition(camPos);
 }
