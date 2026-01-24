@@ -9,13 +9,12 @@ using namespace core;
 using namespace math;
 
 void TerrainGenerator::initialize(){
-    m_width = 5.0f;
-    m_length = 5.0f;
+    m_width = 50.0f;
+    m_length = 50.0f;
     m_maxHeight = 2.0f;
     HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
     createMesh();
 }
-
 
 void TerrainGenerator::createMesh(){
     //Mesh creation logic would go here
@@ -26,8 +25,8 @@ void TerrainGenerator::createMesh(){
 
     // Choose how many samples (vertices) per unit length.
     // Increase samplesPerUnit to make spacing smaller (more vertices).
-    // Example: samplesPerUnit = 4 -> 4 samples per unit length (segments), vertices = segments + 1
-    const int samplesPerUnit = 4;
+    // Example: samplesPerUnit = 10 -> 10 samples per unit length (segments), vertices = segments + 1
+    const int samplesPerUnit = 10;
 
     //generate points
     m_vertexCountX = std::max(2, static_cast<int>(std::ceil(m_width * samplesPerUnit)) + 1);
@@ -36,16 +35,19 @@ void TerrainGenerator::createMesh(){
     float widthSpacing = m_width / static_cast<float>(m_vertexCountX - 1);
     float lengthSpacing = m_length / static_cast<float>(m_vertexCountZ - 1);
 
+    // compute offsets so center of mesh sits at (0, 0) in X,Z
+    const float halfWidth = m_width * 0.5f;
+    const float halfLength = m_length * 0.5f;
+
     // Use integer loops for vertex counts and compute positions from indices.
     // This ensures we produce exactly m_vertexCountX * m_vertexCountZ vertices
     // and include the final row/column.
     for (int ix = 0; ix < m_vertexCountX; ++ix) {
-        float x = ix * widthSpacing;
+        float x = ix * widthSpacing - halfWidth; // centered X
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
-            float z = iz * lengthSpacing;
+            float z = iz * lengthSpacing - halfLength; // centered Z
             //TODO: add height generation logic here
-            float y = std::sin(x + z) / 2.0f;
-            //float y = 0.0f;
+            float y = std::sin(x + z) / 10.0f;
             points.push_back(Point(x, y, z));
         }
     }
