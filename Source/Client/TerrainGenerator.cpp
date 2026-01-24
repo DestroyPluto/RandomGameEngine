@@ -28,7 +28,7 @@ void TerrainGenerator::createMesh(){
     // Choose how many samples (vertices) per unit length.
     // Increase samplesPerUnit to make spacing smaller (more vertices).
     // Example: samplesPerUnit = 10 -> 10 samples per unit length (segments), vertices = segments + 1
-    const int samplesPerUnit = 5;
+    const int samplesPerUnit = 10;
 
     //generate points
     m_vertexCountX = std::max(2, static_cast<int>(std::ceil(m_width * samplesPerUnit)) + 1);
