@@ -47,7 +47,7 @@ void TerrainGenerator::createMesh(){
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
             float z = iz * lengthSpacing - halfLength; // centered Z
             //TODO: add height generation logic here
-            float y = std::sin(x + z) / 10.0f;
+            float y = std::sin(x + z) / 2.0f;
             points.push_back(Point(x, y, z));
         }
     }

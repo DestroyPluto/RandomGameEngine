@@ -28,6 +28,9 @@ void Scene::loadTextures(RenderingPlugin* engine){
        if(e->getLayer() != eWorld){
            continue;
        }
+       if (e->getTexturePath().empty()) {
+           continue;
+       }
 
        std::string path = e->getTexturePath().empty() ? engine->getConfig()->getOption(CONFIG_DEFAULT_TEXTURE, "redChecker.png") : e->getTexturePath();
        HgTexture* tex =  loader.loadFromFile(path.c_str());

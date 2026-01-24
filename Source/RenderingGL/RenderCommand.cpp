@@ -15,6 +15,7 @@ RenderCommand::RenderCommand(uint32_t id, Mesh* mesh, uint32_t textureId, uint32
     m_modelMatrix = glm::mat4(1.0f); //make sure it is initialized
     m_geometry->addTexture(textureId);
     m_key = key;
+    m_hasTexture = (textureId != 0);
 }
 
 void RenderCommand::setTextureID(uint32_t texID){

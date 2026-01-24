@@ -53,8 +53,11 @@ void Geometry::setIndices(std::vector<unsigned int> indices){
 
 void Geometry::drawGeometry(){
   glEnable(GL_BLEND);
-  glBindTexture(GL_TEXTURE_2D, m_textureId);
-  
+  if (m_textureId != 0)
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+  else {
+      glBindTexture(GL_TEXTURE_2D, 0);
+  }
   glBindVertexArray(m_vaoId);
 
   if(m_indexCount > 0){

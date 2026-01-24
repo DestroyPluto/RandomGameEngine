@@ -16,6 +16,7 @@
 #include "TextShader.h"
 #include "HgTexture.h"
 #include "Camera.h"
+#include "ColourShader.h"
 
 namespace rendering
 {
@@ -62,6 +63,7 @@ namespace rendering
 		//TODO: better solution for handling shaders
 		BasicShader* m_basicShader;
 		TextShader* m_textShader;
+        ColourShader* m_colourShader;
 		Camera* m_camera;
 		std::shared_ptr<core::Config> m_config;
 	};

@@ -107,6 +107,11 @@ HgError RenderingEngine::initPlugin() {
     glm::mat4 model = glm::mat4(1.0f);
     m_basicShader->setModelMatrix(model);
 
+    m_colourShader = new ColourShader(m_config);
+    m_colourShader->bind();
+    m_colourShader->setColour(0.5f, 0.0f, 0.0f);
+    m_colourShader->setModelMatrix(model);
+
     m_textShader = new TextShader(m_config);
     m_textShader->bind();
     m_textShader->setModelMatrix(model);
@@ -131,19 +136,29 @@ void RenderingEngine::renderloop(){
 
         //geometry pass - should probably move this into it's own thing.
         //should also have a different pass for each shader type.
-        m_basicShader->bind();
+        Shader* currentShader = m_basicShader;
+
         for(auto rc = m_renderCommands.begin(); rc != m_renderCommands.end(); rc++){
+            //figure out what shader to use
+            if (rc->second.hasTexture()) {
+                currentShader = m_basicShader;
+            }
+            else {
+                currentShader = m_colourShader;
+            }
+
+            currentShader->bind(); //TODO: should only do this once instead of every command
             if(rc->second.getKey() < 1){
                 //m_basicShader->setProjectionMatrix(m_camera->getOrtho());
-                m_basicShader->setProjectionMatrix(glm::mat4(1.0));
-                m_basicShader->setViewMatrix(glm::mat4(1.0));
+                currentShader->setProjectionMatrix(glm::mat4(1.0));
+                currentShader->setViewMatrix(glm::mat4(1.0));
             }else{
-                m_basicShader->setProjectionMatrix(m_camera->getPerspective());
-                m_basicShader->setViewMatrix(m_camera->getView());
+                currentShader->setProjectionMatrix(m_camera->getPerspective());
+                currentShader->setViewMatrix(m_camera->getView());
             }
-            rc->second.execute(m_basicShader);
+            rc->second.execute(currentShader);
         }
-        m_basicShader->unBind();
+        currentShader->unBind();
 
         m_textShader->bind();
         for(auto rc = m_TextRenderCommands.begin(); rc != m_TextRenderCommands.end(); rc++){
