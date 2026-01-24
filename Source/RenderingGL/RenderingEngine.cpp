@@ -9,7 +9,6 @@
 #include "DisplayText.h"
 #include "Config.h"
 
-
 using namespace rendering;
 using namespace core;
 
@@ -97,7 +96,9 @@ HgError RenderingEngine::initPlugin() {
     glfwSetKeyCallback(m_window, key_callback);
     glfwSetCursorPosCallback(m_window, mouse_callback);
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     m_basicShader = new BasicShader(m_config);
     m_basicShader->bind();

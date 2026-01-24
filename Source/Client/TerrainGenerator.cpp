@@ -1,14 +1,16 @@
 #include "TerrainGenerator.h"
 #include "HgLogger.h"
 #include <SceneManager.h>
+#include <algorithm>
+#include <cmath>
 
 using namespace client;
 using namespace core;
 using namespace math;
 
 void TerrainGenerator::initialize(){
-    m_width = 10.0f;
-    m_length = 10.0f;
+    m_width = 5.0f;
+    m_length = 5.0f;
     m_maxHeight = 2.0f;
     HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
     createMesh();
@@ -21,18 +23,29 @@ void TerrainGenerator::createMesh(){
 
     Mesh terrainMesh = Mesh();
     PointArray points;
-    //generate points
-    m_vertexCountX = static_cast<int>(m_width) > 2 ? static_cast<int>(m_width) : 2;
-    m_vertexCountZ = static_cast<int>(m_length) > 2 ? static_cast<int>(m_length) : 2;
 
-    float widthSpacing = m_width / (float)(m_vertexCountX - 1);
-    float lengthSpacing = m_length / (float)(m_vertexCountZ - 1);
-    for (float x = 0.0; x < (float)m_vertexCountX; x+= widthSpacing) {
-        for(float z = 0.0; z < (float)m_vertexCountZ; z+= lengthSpacing) {
+    // Choose how many samples (vertices) per unit length.
+    // Increase samplesPerUnit to make spacing smaller (more vertices).
+    // Example: samplesPerUnit = 4 -> 4 samples per unit length (segments), vertices = segments + 1
+    const int samplesPerUnit = 4;
+
+    //generate points
+    m_vertexCountX = std::max(2, static_cast<int>(std::ceil(m_width * samplesPerUnit)) + 1);
+    m_vertexCountZ = std::max(2, static_cast<int>(std::ceil(m_length * samplesPerUnit)) + 1);
+
+    float widthSpacing = m_width / static_cast<float>(m_vertexCountX - 1);
+    float lengthSpacing = m_length / static_cast<float>(m_vertexCountZ - 1);
+
+    // Use integer loops for vertex counts and compute positions from indices.
+    // This ensures we produce exactly m_vertexCountX * m_vertexCountZ vertices
+    // and include the final row/column.
+    for (int ix = 0; ix < m_vertexCountX; ++ix) {
+        float x = ix * widthSpacing;
+        for (int iz = 0; iz < m_vertexCountZ; ++iz) {
+            float z = iz * lengthSpacing;
             //TODO: add height generation logic here
-            float y = 0.0f; // Flat terrain for now
-            
-            //TODO: adjust spacing based on desired width/length
+            float y = std::sin(x + z) / 2.0f;
+            //float y = 0.0f;
             points.push_back(Point(x, y, z));
         }
     }
@@ -40,17 +53,16 @@ void TerrainGenerator::createMesh(){
     HgLogger::logDebug("Generated %zu points for terrain mesh.", points.toFloatVector().size() / 3);
 
     //generate indices
-    
     std::vector<unsigned int> indices;
     indices.reserve(static_cast<size_t>((m_vertexCountX - 1) * (m_vertexCountZ - 1) * 6));
-    for(int x = 0; x < m_vertexCountX - 1; ++x) {
-        for(int z = 0; z < m_vertexCountZ - 1; ++z) {
-            
-            int topLeft = (x * m_vertexCountZ) + z;
+    for (int ix = 0; ix < m_vertexCountX - 1; ++ix) {
+        for (int iz = 0; iz < m_vertexCountZ - 1; ++iz) {
+
+            int topLeft = (ix * m_vertexCountZ) + iz;
             int topRight = topLeft + 1;
-            int bottomLeft = ((x + 1) * m_vertexCountZ) + z;
+            int bottomLeft = ((ix + 1) * m_vertexCountZ) + iz;
             int bottomRight = bottomLeft + 1;
-     
+
             indices.push_back(topLeft);
             indices.push_back(bottomLeft);
             indices.push_back(topRight);
@@ -67,8 +79,6 @@ void TerrainGenerator::createMesh(){
 
     m_parent->setDirty(true);
     m_parent->setMesh(terrainMesh);
-
-    
 }
 
 void TerrainGenerator::update(){

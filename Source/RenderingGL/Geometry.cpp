@@ -40,12 +40,29 @@ void Geometry::addAttribute(Attribute attrib, std::vector<unsigned int> attribDa
         glBindVertexArray(0); //reset state
 }
 
+void Geometry::setIndices(std::vector<unsigned int> indices){
+    if(indices.size() == 0)
+        return;
+    m_indexCount = indices.size();
+    glBindVertexArray(m_vaoId);
+    glGenBuffers(1, &m_eboId);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBindVertexArray(0); //reset state
+}
+
 void Geometry::drawGeometry(){
   glEnable(GL_BLEND);
   glBindTexture(GL_TEXTURE_2D, m_textureId);
   
   glBindVertexArray(m_vaoId);
-  glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+
+  if(m_indexCount > 0){
+        glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+  }
+  else {
+      glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+  }
   
   glBindTexture(GL_TEXTURE_2D, 0);
   glDisable(GL_BLEND);

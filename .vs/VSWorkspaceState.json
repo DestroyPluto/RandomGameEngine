@@ -7,7 +7,16 @@
   },
   "ExpandedNodes": [
     "",
-    "\\Source"
+    "\\DefaultFiles\\Project",
+    "\\Include\\Client",
+    "\\out\\build",
+    "\\out\\build\\x64-Debug",
+    "\\out\\build\\x64-Debug\\bin",
+    "\\Source",
+    "\\Source\\Client",
+    "\\Source\\Core",
+    "\\Source\\RenderingGL"
   ],
+  "SelectedNode": "\\Source\\RenderingGL\\RenderCommand.cpp",
   "PreviewInSolutionExplorer": false
 }

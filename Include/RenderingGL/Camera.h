@@ -6,7 +6,7 @@ namespace rendering {
     class Camera{
     public:
         float getScreenWidth(){return m_screenWidth;};
-        float getScreenHeight(){return m_screenWidth;};
+        float getScreenHeight(){return m_screenHeight;};
 
         void setScreenWidth(float width){m_screenWidth = width;};
         void setScreenHeight(float height){m_screenHeight = height;};
