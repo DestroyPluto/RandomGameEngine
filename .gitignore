@@ -36,3 +36,9 @@ staticAnalysis.cppcheck
 /.vs/PracticeProject/CopilotIndices
 /.vs/PracticeProject/copilot-chat/7cb87986/sessions
 /out/build/x64-Debug
+/.vs/PracticeProject.slnx/FileContentIndex
+/.vs/PracticeProject.slnx/v18
+/.vs/cmake.db
+/.vs/launch.vs.json
+/.vs/slnx.sqlite
+/.vs/slnx.sqlite-journal
