@@ -4,6 +4,7 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <vector>
+#include "Noise.h"
 
 using namespace client;
 using namespace core;
@@ -161,7 +162,16 @@ void TerrainGenerator::createNormals(core::Mesh* mesh){
 
 
 float TerrainGenerator::calculateHeight(float x, float z){
-    return std::sin(x * z) / 10.0f;
+
+    float seed = 100;
+
+    float noise1 = Noise::simplexNoise(x, z, seed);
+    float noise2 = Noise::simplexNoise(4 * x + 5, 4 * z + 5, seed) * 0.75f;
+    float noise3 = Noise::simplexNoise(8 * x + 3, 8 * z + 3, seed) * 0.25f;
+    
+    float finalNoise = (noise1 + noise2 + noise3) / (1.0f + 0.75f + 0.25f);
+    float finalHeight = std::pow(finalNoise, 3.0f);
+    return finalHeight * 0.2f;
 }
 
 void TerrainGenerator::update(){
