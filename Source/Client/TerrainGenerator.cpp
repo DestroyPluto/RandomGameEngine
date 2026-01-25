@@ -13,9 +13,10 @@ using namespace math;
 void TerrainGenerator::initialize(){
     m_width = 10.0f;
     m_length = 10.0f;
-    m_maxHeight = 2.0f;
+    m_maxHeight = 1.0f;
     HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
     createMesh();
+    m_noiseGenerator = Noise();
 }
 
 void TerrainGenerator::createMesh(){
@@ -162,16 +163,20 @@ void TerrainGenerator::createNormals(core::Mesh* mesh){
 
 
 float TerrainGenerator::calculateHeight(float x, float z){
+    //TODO: I'm not too sold on this height calculation method, may change later
+    // I want valleys and hills, but not too extreme, and I want some good variance over distances.
 
-    float seed = 100;
 
-    float noise1 = Noise::simplexNoise(x, z, seed);
-    float noise2 = Noise::simplexNoise(4 * x + 5, 4 * z + 5, seed) * 0.75f;
-    float noise3 = Noise::simplexNoise(8 * x + 3, 8 * z + 3, seed) * 0.25f;
-    
-    float finalNoise = (noise1 + noise2 + noise3) / (1.0f + 0.75f + 0.25f);
-    float finalHeight = std::pow(finalNoise, 3.0f);
-    return finalHeight * 0.2f;
+    float weight0 = 0.0f;
+    float weight1 = 0.75f;
+    float weight2 = 0.50f;
+
+    float noise0 = m_noiseGenerator.generateNoise2d(x * 0.1, z * 0.1) * weight0;
+    float noise1 = m_noiseGenerator.generateNoise2d(x * 0.5, z * 0.5) * weight1;
+    float noise2 = m_noiseGenerator.generateNoise2d(x * 2, z * 2) * weight2;
+
+    float finalHeight = (noise0 + noise1 + noise2) / (weight0 + weight1 + weight2);
+    return finalHeight * 0.5f;
 }
 
 void TerrainGenerator::update(){

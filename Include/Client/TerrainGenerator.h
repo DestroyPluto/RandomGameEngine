@@ -1,6 +1,7 @@
 #pragma once
 #include "Behaviour.h"
 #include "core/Mesh.h"
+#include "Math/Noise.h"
 
 namespace client {
     class TerrainGenerator : public core::Behaviour{
@@ -27,6 +28,8 @@ namespace client {
         float m_maxHeight;
         int m_vertexCountX;
         int m_vertexCountZ;
+
+        math::Noise m_noiseGenerator;
         
     };
 }
