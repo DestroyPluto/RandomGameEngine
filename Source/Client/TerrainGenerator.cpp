@@ -18,8 +18,9 @@ void TerrainGenerator::initialize(){
     m_parent->setScale(glm::vec3(10.0f, 2.0f, 10.0f));
     HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
     //TODO: random seed
-    m_noiseGenerator0 = Noise(10000);
-    m_noiseGenerator1 = Noise(20000);
+    uint64_t seed = 12345;
+    m_noiseGenerator0 = Noise(seed);
+    m_noiseGenerator1 = Noise(seed * 2);
 
     createMesh();
 
