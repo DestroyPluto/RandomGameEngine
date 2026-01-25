@@ -1,6 +1,5 @@
 #include "TerrainGenerator.h"
 #include "HgLogger.h"
-#include <SceneManager.h>
 #include <algorithm>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -23,11 +22,21 @@ void TerrainGenerator::createMesh(){
     HgLogger::logDebug("Creating terrain mesh...");
 
     Mesh terrainMesh = Mesh();
+    
+    createPoints(&terrainMesh);
+
+    createIndices(&terrainMesh);
+    
+    createNormals(&terrainMesh);
+
+    m_parent->setDirty(true);
+    m_parent->setMesh(terrainMesh);
+}
+
+void TerrainGenerator::createPoints(core::Mesh* mesh){
     PointArray points;
 
     // Choose how many samples (vertices) per unit length.
-    // Increase samplesPerUnit to make spacing smaller (more vertices).
-    // Example: samplesPerUnit = 10 -> 10 samples per unit length (segments), vertices = segments + 1
     const int samplesPerUnit = 10;
 
     //generate points
@@ -49,13 +58,18 @@ void TerrainGenerator::createMesh(){
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
             float z = iz * lengthSpacing - halfLength; // centered Z
             //TODO: add height generation logic here
-            float y = std::sin(x * z) / 10.0f;
+            float y = calculateHeight(x, z);
+
             points.push_back(Point(x, y, z));
         }
     }
+    mesh->setPoints(points, false);
 
     HgLogger::logDebug("Generated %zu points for terrain mesh.", points.toFloatVector().size() / 3);
 
+}
+
+void TerrainGenerator::createIndices(core::Mesh* mesh){
     //generate indices
     std::vector<unsigned int> indices;
     indices.reserve(static_cast<size_t>((m_vertexCountX - 1) * (m_vertexCountZ - 1) * 6));
@@ -79,15 +93,20 @@ void TerrainGenerator::createMesh(){
     HgLogger::logDebug("Generated %zu indices for terrain mesh.", indices.size());
 
     // Set vertex positions on mesh
-    terrainMesh.setPoints(points, false);
-    terrainMesh.setIndices(indices);
+    mesh->setIndices(indices);
+
+}
+
+void TerrainGenerator::createNormals(core::Mesh* mesh){
+    //Normal creation logic would go here.
 
     // --- Compute vertex normals ---
     // Convert point array to float vector for easy indexed access (x,y,z)
-    std::vector<float> posFloats = points.toFloatVector();
+    std::vector<float> posFloats = mesh->getPoints().toFloatVector();
     const size_t vertexCount = posFloats.size() / 3;
     std::vector<glm::vec3> normalAcc(vertexCount, glm::vec3(0.0f));
 
+    const std::vector<unsigned int> indices = mesh->getIndices();
     // For each triangle, compute face normal (area-weighted) and accumulate to each vertex
     for (size_t i = 0; i + 2 < indices.size(); i += 3) {
         unsigned int i0 = indices[i + 0];
@@ -127,19 +146,22 @@ void TerrainGenerator::createMesh(){
         float len = glm::length(n);
         if (len > 1e-6f) {
             n = glm::normalize(n);
-        } else {
+        }
+        else {
             // Fallback normal (up)
             n = glm::vec3(0.0f, 1.0f, 0.0f);
         }
         normals.push_back(Point(n.x, n.y, n.z));
     }
 
-    terrainMesh.setNormals(normals);
+    mesh->setNormals(normals);
 
     HgLogger::logDebug("Generated %zu normals for terrain mesh.", vertexCount);
+}
 
-    m_parent->setDirty(true);
-    m_parent->setMesh(terrainMesh);
+
+float TerrainGenerator::calculateHeight(float x, float z){
+    return std::sin(x * z) / 10.0f;
 }
 
 void TerrainGenerator::update(){

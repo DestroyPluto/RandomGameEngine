@@ -1,5 +1,7 @@
 #pragma once
 #include "Behaviour.h"
+#include "core/Mesh.h"
+
 namespace client {
     class TerrainGenerator : public core::Behaviour{
     public:
@@ -9,9 +11,16 @@ namespace client {
             return "TerrainGenerator";
         }
 
-        void createMesh();
+       
 
     private:
+        void createMesh();
+        
+        void createPoints(core::Mesh* mesh);
+        void createIndices(core::Mesh* mesh);
+        void createNormals(core::Mesh* mesh);
+
+        float calculateHeight(float x, float z);
 
         float m_width;
         float m_length;
