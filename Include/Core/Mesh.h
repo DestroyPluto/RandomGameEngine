@@ -20,6 +20,10 @@ public:
 
     math::PointArray getPoints(){return m_points;};
     std::vector<unsigned int> getUvs(){return m_UV;};
+    std::vector<unsigned int> getIndices() { return m_indicies; };
+    math::PointArray getNormals() { return m_Normals; };
+    std::vector<unsigned int> getTextureIndices() { return m_textureIndicies; };
+    std::vector<unsigned int> getNormalIndices() { return m_normalIndicies; };
     
     bool is2D(){return m_b2D;}
 

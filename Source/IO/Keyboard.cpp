@@ -41,5 +41,5 @@ void Keyboard::setKey(int key, int action){
     
     m_keys[key] = action;
 
-    HgLogger::logDebug("%d is %d", key, action);
+    //HgLogger::logDebug("%d is %d", key, action);
 }

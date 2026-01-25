@@ -13,11 +13,12 @@ namespace rendering{
         void updateModelMatrix(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale);
         void setTextureID(uint32_t id);
         uint32_t getKey(){return m_key;}
-
+        bool hasTexture() { return m_hasTexture; }
     private:
         uint32_t m_globalId;
         Geometry* m_geometry;
         glm::mat4 m_modelMatrix;
         uint32_t m_key;
+        bool m_hasTexture;
     };
 }

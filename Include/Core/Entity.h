@@ -27,7 +27,12 @@ class Entity{
         void setLayer(hgLayer layer){m_layer = layer;}
 
         void setTexture(HgTexture* tex){m_texture = tex;}
-        uint32_t getTextureId(){return m_texture->getId();}
+        uint32_t getTextureId() { 
+            if (m_texture) { 
+                return m_texture->getId();
+            }
+            return 0;
+        }
 
         void setTexturePath(std::string path){m_texturePath = path;}
         std::string getTexturePath(){return m_texturePath;}
@@ -58,7 +63,7 @@ class Entity{
         glm::vec3 m_rotation;
         glm::vec3 m_scale;
 
-        HgTexture* m_texture; //TODO: have a default texture
+        HgTexture* m_texture = nullptr; //TODO: have a default texture
         std::string m_texturePath;
         hgLayer m_layer = eWorld;
         uint32_t m_id;

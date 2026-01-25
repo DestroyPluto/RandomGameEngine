@@ -4,6 +4,8 @@
 
 #define LOG_STANDARD_IO
 
+#define LOG_DEBUG_ENABLED
+
 namespace core{
 
 class HgLogger{
@@ -11,11 +13,17 @@ public:
     template <typename... Args>
     static void logMsg(const char* msg, Args&&... args){log(msg, std::forward<Args>(args)...); log("\n");}
     static void logMsg(const char* msg){log(msg);log("\n");}
-    
+
+#ifdef LOG_DEBUG_ENABLED
     template <typename... Args>
-    static void logDebug(const char* msg, Args&&... args){log("DEBUG:");log(msg, std::forward<Args>(args)...);log("\n");}
-    static void logDebug(const char* msg){log("DEBUG: ");log(msg);log("\n");}
-    
+    static void logDebug(const char* msg, Args&&... args) { log("DEBUG:"); log(msg, std::forward<Args>(args)...); log("\n"); }
+    static void logDebug(const char* msg) { log("DEBUG: "); log(msg); log("\n"); }
+#else
+    template <typename... Args>
+    static void logDebug(const char* msg, Args&&... args) {};
+    static void logDebug(const char* msg) {};
+#endif // DEBUG
+
     template <typename... Args>
     static void logError(const char* msg, Args&&... args){log("***ERROR***\n");log(msg, std::forward<Args>(args)...);log("\n***********\n");};
     static void logError(const char* msg){log("***ERROR***\n");log(msg);log("\n***********\n");};

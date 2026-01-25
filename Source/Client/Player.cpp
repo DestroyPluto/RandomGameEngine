@@ -21,11 +21,11 @@ void Player::handleMovement(){
 
     //handle movement
     if(Keyboard::getInstance()->isKeyDown(Keyboard::KEY_W)){
-        pos.y += m_speed * GameTime::getDeltaTime();
+        pos.z -= m_speed * GameTime::getDeltaTime();
     }
     
     if(Keyboard::getInstance()->isKeyDown(Keyboard::KEY_S)){
-        pos.y -= m_speed * GameTime::getDeltaTime();
+        pos.z += m_speed * GameTime::getDeltaTime();
     }
 
     if(Keyboard::getInstance()->isKeyDown(Keyboard::KEY_D)){
@@ -36,9 +36,18 @@ void Player::handleMovement(){
         pos.x -= m_speed * GameTime::getDeltaTime();
     }
 
+    if(Keyboard::getInstance()->isKeyDown(Keyboard::KEY_SPACE)){
+        pos.y += m_speed * GameTime::getDeltaTime();
+    }
+
+    if(Keyboard::getInstance()->isKeyDown(Keyboard::KEY_LEFT_SHIFT)){
+        pos.y -= m_speed * GameTime::getDeltaTime();
+    }
+
     m_parent->setPosition(pos);
     glm::vec3 camPos = SceneManager::getInstance()->getCameraPosition();
     camPos.x = pos.x;
     camPos.y = pos.y;
+    camPos.z = pos.z + 2.0f;
     SceneManager::getInstance()->setCameraPosition(camPos);
 }
