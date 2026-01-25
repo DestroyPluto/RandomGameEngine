@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include "Noise.h"
+#include <Mesh.h>
 
 using namespace client;
 using namespace core;
@@ -14,9 +15,14 @@ void TerrainGenerator::initialize(){
     m_width = 10.0f;
     m_length = 10.0f;
     m_maxHeight = 1.0f;
+    m_parent->setScale(glm::vec3(10.0f, 2.0f, 10.0f));
     HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
+    //TODO: random seed
+    m_noiseGenerator0 = Noise(10000);
+    m_noiseGenerator1 = Noise(20000);
+
     createMesh();
-    m_noiseGenerator = Noise();
+
 }
 
 void TerrainGenerator::createMesh(){
@@ -39,7 +45,7 @@ void TerrainGenerator::createPoints(core::Mesh* mesh){
     PointArray points;
 
     // Choose how many samples (vertices) per unit length.
-    const int samplesPerUnit = 10;
+    const int samplesPerUnit = 16;
 
     //generate points
     m_vertexCountX = std::max(2, static_cast<int>(std::ceil(m_width * samplesPerUnit)) + 1);
@@ -167,16 +173,23 @@ float TerrainGenerator::calculateHeight(float x, float z){
     // I want valleys and hills, but not too extreme, and I want some good variance over distances.
 
 
-    float weight0 = 0.0f;
-    float weight1 = 0.75f;
-    float weight2 = 0.50f;
+    float weight0 = 1.0f;
+    float weight1 = 0.5f;
+    float weight2 = 0.25f;
 
-    float noise0 = m_noiseGenerator.generateNoise2d(x * 0.1, z * 0.1) * weight0;
-    float noise1 = m_noiseGenerator.generateNoise2d(x * 0.5, z * 0.5) * weight1;
-    float noise2 = m_noiseGenerator.generateNoise2d(x * 2, z * 2) * weight2;
+    float weight3 = 0.5f;
+    float weight4 = 0.25f;
 
-    float finalHeight = (noise0 + noise1 + noise2) / (weight0 + weight1 + weight2);
-    return finalHeight * 0.5f;
+    float noise0 = m_noiseGenerator0.generateNoise2d(x, z) * weight0;
+    float noise1 = m_noiseGenerator1.generateNoise2d(x * 2.0f, z * 2.0f) * weight1;
+    float noise2 = m_noiseGenerator1.generateNoise2d(4.0f * x + 4.0f, 4.0f * z + 4.0f) * weight2;
+
+    float noise3 = Noise::simplexNoise(x, z, noise0) * weight3;
+    float noise4 = Noise::simplexNoise(x * 0.5f, z * 0.5f, noise1) * weight4;
+
+    float finalHeight = (noise0 + noise1 + noise2 + noise3 + noise4) / (weight0 + weight1 + weight2 + weight3 + weight4);
+
+    return finalHeight * 0.1f;
 }
 
 void TerrainGenerator::update(){

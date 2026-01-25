@@ -20,7 +20,7 @@ Noise::Noise(uint64_t seed) {
 
     // Shuffle the permutation table based on the seed
     std::shuffle(m_permutations.begin(), m_permutations.end(), std::default_random_engine(m_seed));
-
+    
     for(int i = 0; i < 512; i++) {
         m_perms[i] = m_permutations[i & 255];
     }
@@ -105,8 +105,8 @@ float Noise::generateNoise2d(float x, float y) {
         n2 = t2 * t2 * dot(grad3[gi2], x2, y2);
     }
 
-    float result = (float)(10.0 * (n0 + n1 + n2)); // Scale the result to cover the range [-1,1]
-    result = (result + 1.0f) / 2.0f; // Normalize to [0,1]
+    float result = (float)(70.0 * (n0 + n1 + n2)); // Scale the result to cover the range [-1,1]
+    //result = (result + 1.0f) / 2.0f; // Normalize to [0,1]
     return result;
 
 }

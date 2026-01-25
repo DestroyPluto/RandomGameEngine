@@ -65,6 +65,7 @@ RenderingEngine::RenderingEngine(std::shared_ptr<core::Config> config){
     m_camera = nullptr;
     m_basicShader = nullptr;
     m_textShader = nullptr;
+    m_colourShader = nullptr;
 }
 
 HgError RenderingEngine::initPlugin() {

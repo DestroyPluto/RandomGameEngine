@@ -12,7 +12,10 @@ namespace client {
             return "TerrainGenerator";
         }
 
-       
+       virtual ~TerrainGenerator() {
+          //  delete m_noiseGenerator0;
+           // delete m_noiseGenerator1;
+       }
 
     private:
         void createMesh();
@@ -29,7 +32,8 @@ namespace client {
         int m_vertexCountX;
         int m_vertexCountZ;
 
-        math::Noise m_noiseGenerator;
+        math::Noise m_noiseGenerator0;
+        math::Noise m_noiseGenerator1;
         
     };
 }
