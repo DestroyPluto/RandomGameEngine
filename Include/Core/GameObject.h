@@ -12,8 +12,10 @@ namespace core{
             virtual void onClick() override;
             virtual void onCollision() override;
             Behaviour* getBehaviour(){return m_behaviour;}
+            
         private:
             Behaviour* m_behaviour;
             bool m_clickProgress;
+
     };
 }

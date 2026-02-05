@@ -21,6 +21,7 @@ bool Entity::intersects(Entity* other){
     return false;
 }
 //TODO: 3D collision
+//TODO handle collision with children as well
 bool Entity::intersects(glm::vec3 pos){
     float left = m_position.x - (m_scale.x/2.0f);
     float right = m_position.x + (m_scale.x/2.0f);

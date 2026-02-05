@@ -43,15 +43,32 @@ void Scene::update(RenderingPlugin* engine){
     m_dirtyEnts.clear();
     double mX, mY;
     Mouse::getInstance()->getScreenPos(mX, mY);
+
     for(Entity* e : m_entities){
         e->onUpdate();
+        
         if(e->isDirty()){
             m_dirtyEnts.push_back(e);
         }
-        if(e->intersects(mX,mY,0))
+        
+        if(e->intersects(mX,mY,0)){
             e->onCollision();
+        }
+
+        //probably a way to do this with recursion...
+        for (Entity* children : e->getChildren()) {
+            children->onUpdate();
+            if (children->isDirty()) {
+                m_dirtyEnts.push_back(children);
+            }
+            if (children->intersects(mX, mY, 0)){
+                children->onCollision();
+            }
+        }
     }
     
+    
+
     if(m_dirtyEnts.size() > 0){
         engine->setDirtyEntities(m_dirtyEnts);
     }

@@ -53,6 +53,16 @@ class Entity{
         virtual void onCollision(); //specifically the mouse
         virtual void onUpdate();
         virtual void onClick();
+
+        void addChild(Entity* child) {
+            m_children.push_back(child);
+            child->setParent(this);
+        }
+        void getChild(uint32_t id);
+        const std::vector<Entity*> getChildren() { return m_children; }
+        void setParent(Entity* parent) { m_parent = parent; }
+        Entity* getParent() { return m_parent; }
+
         virtual ~Entity();
 
     protected:
@@ -68,6 +78,8 @@ class Entity{
         hgLayer m_layer = eWorld;
         uint32_t m_id;
         bool m_isDirty;
+        std::vector<Entity*> m_children;
+        Entity* m_parent;
 
 };
 }

@@ -23,6 +23,7 @@ GameObject::GameObject(uint32_t id, Behaviour* behaviour, glm::vec3 position, gl
 
 void GameObject::onUpdate(){
     m_behaviour->update();
+    
 }
 
 void GameObject::onClick(){
