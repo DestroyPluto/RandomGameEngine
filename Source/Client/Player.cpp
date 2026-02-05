@@ -8,7 +8,8 @@ using namespace io;
 using namespace core;
 
 void Player::initialize(){
-    
+    //make sure the scene knows this is the player.
+    SceneManager::getInstance()->setPlayerEntity(m_parent);
 }
 
 void Player::update(){

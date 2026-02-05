@@ -9,10 +9,15 @@ Entity::Entity(uint32_t id){
     m_position = glm::vec3(0.0f);
     m_rotation = glm::vec3(1.0f);
     m_scale = glm::vec3(1.0f);
-    m_mesh = Mesh();
+    m_mesh = new Mesh();
 }
 
 Entity::~Entity(){
+    delete m_mesh;
+    for (Entity* ent : m_children) {
+        delete ent;
+    }
+
     HgLogger::logDebug("Entity destroyed");
 }
 

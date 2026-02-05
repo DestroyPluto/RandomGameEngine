@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include "RenderingPlugin.h"
+#include "Entity.h"
 
 namespace client{
     class SceneManager{
@@ -30,10 +31,14 @@ namespace client{
         void setCameraPosition(glm::vec3 position);
         glm::vec3 getCameraPosition();
 
+        void setPlayerEntity(core::Entity* player) { m_playerEntity = player; }
+        core::Entity* getPlayerEntity() { return m_playerEntity; }
+
     private:
         SceneManager();
         std::unordered_map<std::string, core::Scene> m_scenes;
         core::Scene* m_currentScene;
         core::RenderingPlugin* m_engine;
+        core::Entity* m_playerEntity;
     };
 }

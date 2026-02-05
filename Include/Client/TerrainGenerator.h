@@ -1,7 +1,6 @@
 #pragma once
 #include "Behaviour.h"
-#include "core/Mesh.h"
-#include "Math/Noise.h"
+
 
 namespace client {
     class TerrainGenerator : public core::Behaviour{
@@ -18,22 +17,8 @@ namespace client {
        }
 
     private:
-        void createMesh();
-        
-        void createPoints(core::Mesh* mesh);
-        void createIndices(core::Mesh* mesh);
-        void createNormals(core::Mesh* mesh);
-
-        float calculateHeight(float x, float z);
-
-        float m_width;
-        float m_length;
-        float m_maxHeight;
-        int m_vertexCountX;
-        int m_vertexCountZ;
-
-        math::Noise m_noiseGenerator0;
-        math::Noise m_noiseGenerator1;
+        void createChunks();
+        float getDistanceFromPlayer(glm::vec3 chunkPos);
         
     };
 }

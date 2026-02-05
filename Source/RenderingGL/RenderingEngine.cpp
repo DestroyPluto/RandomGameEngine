@@ -301,7 +301,6 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
 HgError RenderingEngine::createRenderCommand(Entity* ent){
     //TODO: proper key generation.
     uint32_t key = ent->getLayer();
-
     //text entities have a different render command
     if(ent->getLayer() == core::eText){
         DisplayText* txt = dynamic_cast<DisplayText*>(ent);

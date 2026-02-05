@@ -17,8 +17,8 @@ class Entity{
 
     public:
         Entity(uint32_t id);
-        void setMesh(Mesh mesh){m_mesh = mesh;}
-        Mesh* getMesh(){return &m_mesh;}
+        void setMesh(Mesh* mesh){m_mesh = mesh;}
+        Mesh* getMesh(){return m_mesh;}
         bool isDirty(){return m_isDirty;}
         void setDirty(bool isDirty){m_isDirty = isDirty;}
         uint32_t getId(){return m_id;}
@@ -58,7 +58,6 @@ class Entity{
             m_children.push_back(child);
             child->setParent(this);
         }
-        void getChild(uint32_t id);
         const std::vector<Entity*> getChildren() { return m_children; }
         void setParent(Entity* parent) { m_parent = parent; }
         Entity* getParent() { return m_parent; }
@@ -66,7 +65,7 @@ class Entity{
         virtual ~Entity();
 
     protected:
-        Mesh m_mesh;
+        Mesh* m_mesh = nullptr;
 
     private:
         glm::vec3 m_position;

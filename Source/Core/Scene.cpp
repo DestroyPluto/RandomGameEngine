@@ -46,7 +46,26 @@ void Scene::update(RenderingPlugin* engine){
 
     for(Entity* e : m_entities){
         e->onUpdate();
-        
+
+        //probably a way to do this with recursion...
+        for (Entity* children : e->getChildren()) {
+            children->onUpdate();
+            
+            if (!children->getMesh()){
+                continue;
+            }
+            if (children->isDirty()) {
+                m_dirtyEnts.push_back(children);
+            }
+            if (children->intersects(mX, mY, 0)) {
+                children->onCollision();
+            }
+        }
+        //don't want to check for collisions, or send it to the engine if there isn't a mesh.
+        if (!e->getMesh()) {
+            continue;
+        }
+
         if(e->isDirty()){
             m_dirtyEnts.push_back(e);
         }
@@ -55,16 +74,6 @@ void Scene::update(RenderingPlugin* engine){
             e->onCollision();
         }
 
-        //probably a way to do this with recursion...
-        for (Entity* children : e->getChildren()) {
-            children->onUpdate();
-            if (children->isDirty()) {
-                m_dirtyEnts.push_back(children);
-            }
-            if (children->intersects(mX, mY, 0)){
-                children->onCollision();
-            }
-        }
     }
     
     
