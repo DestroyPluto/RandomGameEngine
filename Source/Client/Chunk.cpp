@@ -37,32 +37,26 @@ void Chunk::createMesh() {
 }
 
 void Chunk::createPoints(core::Mesh* mesh) {
-    PointArray points;
-
     // Choose how many samples (vertices) per unit length.
     const int samplesPerUnit = 2;
 
-    //generate points
     m_vertexCountX = std::max(2, static_cast<int>(std::ceil(CHUNK_SIZE * samplesPerUnit)) + 1);
     m_vertexCountZ = std::max(2, static_cast<int>(std::ceil(CHUNK_SIZE * samplesPerUnit)) + 1);
 
     float widthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountX - 1);
     float lengthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountZ - 1);
-
-    // compute offsets so center of mesh sits at (0, 0) in X,Z
     const float halfWidth = CHUNK_SIZE * 0.5f;
     const float halfLength = CHUNK_SIZE * 0.5f;
 
-    // Use integer loops for vertex counts and compute positions from indices.
-    // This ensures we produce exactly m_vertexCountX * m_vertexCountZ vertices
-    // and include the final row/column.
+    // Precompute world position to avoid repeated getPosition() calls
+    glm::vec3 chunkPos = getPosition();
+
+    PointArray points;
     for (int ix = 0; ix < m_vertexCountX; ++ix) {
         float x = ix * widthSpacing - halfWidth; // centered X
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
             float z = iz * lengthSpacing - halfLength; // centered Z
-            //TODO: add height generation logic here
-            float y = calculateHeight(x, z);
-
+            float y = calculateHeight(x, z, chunkPos); // pass chunkPos to avoid repeated getPosition()
             points.push_back(Point(x, y, z));
         }
     }
@@ -140,40 +134,31 @@ void Chunk::createNormals(core::Mesh* mesh) {
 
     // Normalize accumulated normals and create PointArray for normals
     PointArray normals;
-    normals = PointArray(); // ensure default constructed
     for (size_t vi = 0; vi < vertexCount; ++vi) {
         glm::vec3 n = normalAcc[vi];
         float len = glm::length(n);
         if (len > 1e-6f) {
             n = glm::normalize(n);
-        }
-        else {
-            // Fallback normal (up)
+        } else {
             n = glm::vec3(0.0f, 1.0f, 0.0f);
         }
         normals.push_back(Point(n.x, n.y, n.z));
     }
-
     mesh->setNormals(normals);
 
 }
 
 
-float Chunk::calculateHeight(float x, float z) {
-    
-    
-    //TODO: I'm not too sold on this height calculation method, may change later
-    // I want valleys and hills, but not too extreme, and I want some good variance over distances.
+// Overload to accept chunk position to avoid repeated getPosition() calls
+float Chunk::calculateHeight(float x, float z, const glm::vec3& chunkPos) {
+    float world_x = chunkPos.x + x;
+    float world_z = chunkPos.z + z;
 
-    float world_x = getPosition().x + x;
-    float world_z = getPosition().z + z;
-
-    float weight0 = 1.0f;
-    float weight1 = 0.5f;
-    float weight2 = 0.25f;
-
-    float weight3 = 0.5f;
-    float weight4 = 0.25f;
+    constexpr float weight0 = 1.0f;
+    constexpr float weight1 = 0.5f;
+    constexpr float weight2 = 0.25f;
+    constexpr float weight3 = 0.5f;
+    constexpr float weight4 = 0.25f;
 
     float noise0 = m_noiseGenerator0.generateNoise2d(world_x, world_z) * weight0;
     float noise1 = m_noiseGenerator1.generateNoise2d(world_x * 2.0f, world_z * 2.0f) * weight1;
@@ -185,6 +170,11 @@ float Chunk::calculateHeight(float x, float z) {
     float finalHeight = (noise0 + noise1 + noise2 + noise3 + noise4) / (weight0 + weight1 + weight2 + weight3 + weight4);
 
     return finalHeight * 0.1f;
+}
+
+// Backward compatibility for existing calls
+float Chunk::calculateHeight(float x, float z) {
+    return calculateHeight(x, z, getPosition());
 }
 
 void Chunk::onCollision(){

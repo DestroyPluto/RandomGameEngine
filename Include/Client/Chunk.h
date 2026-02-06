@@ -24,6 +24,7 @@ namespace client {
         void createNormals(core::Mesh* mesh);
 
         float calculateHeight(float x, float z);
+        float calculateHeight(float x, float z, const glm::vec3& chunkPos);
 
 
         int m_vertexCountX = 16;
