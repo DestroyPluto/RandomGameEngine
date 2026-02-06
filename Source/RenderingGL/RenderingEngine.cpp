@@ -343,7 +343,6 @@ HgError RenderingEngine::createRenderCommand(Entity* ent){
         rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
         //insert the rendercommand into the map
         m_renderCommands.emplace(ent->getId(), std::move(rc));
-        HgLogger::logMsg("Created Render Command!");
     } 
     return HgError::eSuccess;
 }

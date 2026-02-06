@@ -28,7 +28,6 @@ uint32_t TerrainGenerator::generateChunkId(float x, float y) {
 }
 
 void TerrainGenerator::createChunks(){
-    HgLogger::logDebug("Creating chunks around player...");
     uint64_t seed = 12345;
     
     int numChunks = static_cast<int>(std::ceil((m_renderRadius * 2) / (Chunk::CHUNK_SIZE - 1)));
@@ -70,7 +69,6 @@ void TerrainGenerator::createChunks(){
             }
 
             if (!chunkExists){
-                HgLogger::logDebug("Chunk does not exist.");
                 //queue the chunk to be created
                 m_pendingChunks.emplace(chunkId, chunkPos, seed);
             }
@@ -84,8 +82,6 @@ void TerrainGenerator::loadPendingChunks() {
     int loadedThisFrame = 0;
 
     while (m_pendingChunks.size() > 0 && loadedThisFrame < m_chunksPerFrame) {
-        HgLogger::logDebug("Dynamically loading chunks");
-
         auto [chunkId, chunkPos, seed] = m_pendingChunks.front();
         m_pendingChunks.pop();
         Chunk* newChunk = new Chunk(chunkId, chunkPos, seed);

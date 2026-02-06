@@ -23,7 +23,6 @@ Chunk::Chunk(uint32_t id, glm::vec3 pos, uint64_t seed) : Entity(id){
 
 void Chunk::createMesh() {
     //Mesh creation logic would go here
-    HgLogger::logDebug("Creating terrain mesh...");
 
     Mesh* terrainMesh = new Mesh();
 
@@ -69,8 +68,6 @@ void Chunk::createPoints(core::Mesh* mesh) {
     }
     mesh->setPoints(points, false);
 
-    HgLogger::logDebug("Generated %zu points for terrain mesh.", points.toFloatVector().size() / 3);
-
 }
 
 void Chunk::createIndices(core::Mesh* mesh) {
@@ -94,7 +91,6 @@ void Chunk::createIndices(core::Mesh* mesh) {
         }
     }
 
-    HgLogger::logDebug("Generated %zu indices for terrain mesh.", indices.size());
 
     // Set vertex positions on mesh
     mesh->setIndices(indices);
@@ -160,7 +156,6 @@ void Chunk::createNormals(core::Mesh* mesh) {
 
     mesh->setNormals(normals);
 
-    HgLogger::logDebug("Generated %zu normals for terrain mesh.", vertexCount);
 }
 
 
@@ -198,4 +193,5 @@ void Chunk::onCollision(){
 }
 
 Chunk::~Chunk(){
+    HgLogger::logDebug("Destroying chunk with id: %u", getId());
 }
