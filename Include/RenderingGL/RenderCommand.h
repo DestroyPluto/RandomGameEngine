@@ -14,11 +14,14 @@ namespace rendering{
         void setTextureID(uint32_t id);
         uint32_t getKey(){return m_key;}
         bool hasTexture() { return m_hasTexture; }
+        bool shouldRender() { return m_shouldRender; }
+        void setShouldRender(bool shouldRender) { m_shouldRender = shouldRender; }
     private:
         uint32_t m_globalId;
         Geometry* m_geometry;
         glm::mat4 m_modelMatrix;
         uint32_t m_key;
         bool m_hasTexture;
+        bool m_shouldRender = true;
     };
 }

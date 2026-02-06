@@ -24,6 +24,9 @@ void RenderCommand::setTextureID(uint32_t texID){
 }
 
 void RenderCommand::execute(Shader* shader){
+    if (m_shouldRender == false) {
+        return;
+    }
     shader->setModelMatrix(m_modelMatrix);
     m_geometry->drawGeometry();
 }

@@ -6,14 +6,12 @@
 
 namespace client {
 
-
     class Chunk : public core::Entity{
     public:
             Chunk(uint32_t id, glm::vec3 pos, uint64_t seed);
             virtual ~Chunk();
             virtual void onCollision() override;
             static constexpr int CHUNK_SIZE = 16;
-
 
     protected:
 

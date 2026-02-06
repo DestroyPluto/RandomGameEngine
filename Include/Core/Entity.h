@@ -58,9 +58,20 @@ class Entity{
             m_children.push_back(child);
             child->setParent(this);
         }
+        void removeChild(Entity* child) {
+            m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
+            child->setParent(nullptr);
+        }
+
         const std::vector<Entity*> getChildren() { return m_children; }
         void setParent(Entity* parent) { m_parent = parent; }
         Entity* getParent() { return m_parent; }
+
+        bool renderMesh() { return m_renderMesh; }
+        void setRenderMesh(bool render) { m_renderMesh = render; setDirty(true); }
+
+        bool shouldDestroy() { return m_shouldDestroy; }
+        void markForDestruction() { m_shouldDestroy = true; }
 
         virtual ~Entity();
 
@@ -79,6 +90,7 @@ class Entity{
         bool m_isDirty;
         std::vector<Entity*> m_children;
         Entity* m_parent;
-
+        bool m_renderMesh = true;
+        bool m_shouldDestroy = false;
 };
 }

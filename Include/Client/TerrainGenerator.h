@@ -1,6 +1,9 @@
 #pragma once
 #include "Behaviour.h"
-
+#include "chunk.h"
+#include "glm/glm.hpp"
+#include <queue>
+#include <tuple>
 
 namespace client {
     class TerrainGenerator : public core::Behaviour{
@@ -18,7 +21,16 @@ namespace client {
 
     private:
         void createChunks();
-        float getDistanceFromPlayer(glm::vec3 chunkPos);
+        float getDistanceBetweenTwoPoints2D(glm::vec2 pos1, glm::vec2 pos2);
+        void loadPendingChunks();
+        uint32_t generateChunkId(float x, float z);
+
+        std::vector<Chunk*> m_loadedChunks;
+        glm::vec2 m_centerChunkCoords;
+        float m_renderRadius = 32.0f;
+        float m_loadRadius = 64.0f;
         
+        std::queue<std::tuple<uint32_t, glm::vec3, uint64_t>> m_pendingChunks;
+        int m_chunksPerFrame = 2; // Tune this for your performance
     };
 }
