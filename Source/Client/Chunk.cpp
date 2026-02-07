@@ -84,8 +84,6 @@ void Chunk::createIndices(core::Mesh* mesh) {
             indices.push_back(bottomRight);
         }
     }
-
-
     // Set vertex positions on mesh
     mesh->setIndices(indices);
 
