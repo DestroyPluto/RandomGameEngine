@@ -1,6 +1,6 @@
 #pragma once
-#include "core/Entity.h"
-#include "core/Mesh.h"
+#include "Core/Entity.h"
+#include "Core/Mesh.h"
 #include "Math/Noise.h"
 
 

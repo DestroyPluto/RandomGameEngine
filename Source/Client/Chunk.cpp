@@ -4,8 +4,8 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <vector>
-#include "Noise.h"
-#include <Mesh.h>
+#include "Math/Noise.h"
+#include "Core/Mesh.h"
 
 using namespace client;
 using namespace core;

@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <Behaviour.h>
+#include "Core/Behaviour.h"
 #include <unordered_map>
 #include <utility>
 #include "HgLogger.h"
