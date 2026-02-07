@@ -34,7 +34,6 @@ staticAnalysis.cppcheck
 /.vs/PracticeProject/v17
 /.vs/PracticeProject/FileContentIndex
 /.vs/PracticeProject/CopilotIndices
-/.vs/PracticeProject/copilot-chat/7cb87986/sessions
 /out/build/x64-Debug
 /.vs/PracticeProject.slnx/FileContentIndex
 /.vs/PracticeProject.slnx/v18
@@ -44,6 +43,5 @@ staticAnalysis.cppcheck
 /.vs/slnx.sqlite-journal
 /.vs/PracticeProject/v18/workspaceFileList.bin
 /.vs/VSWorkspaceState.json
-/.vs/PracticeProject.slnx/copilot-chat/7cb87986/sessions
-/.vs/CopilotSnapshots/3F9FF9C3790A3943AEC7628A1DFEDA9D/05D18BC6A9D5254BAD5D2E9BDEE20321
-/.vs/CopilotSnapshots/3F9FF9C3790A3943AEC7628A1DFEDA9D
+/.vs/PracticeProject.slnx/copilot-chat/*
+/.vs/CopilotSnapshots/*
