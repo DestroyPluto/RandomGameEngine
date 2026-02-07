@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "HgTexture.h"
 #include <string>
+#include <algorithm>
 //#include "Behaviour.h"
 
 namespace core{

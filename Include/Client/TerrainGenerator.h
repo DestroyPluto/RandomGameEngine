@@ -1,6 +1,6 @@
 #pragma once
 #include "Behaviour.h"
-#include "chunk.h"
+#include "Chunk.h"
 #include "glm/glm.hpp"
 #include <queue>
 #include <tuple>
