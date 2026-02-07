@@ -39,20 +39,52 @@ void Scene::loadTextures(RenderingPlugin* engine){
    }
 }
 
-void Scene::update(RenderingPlugin* engine){
-    m_dirtyEnts.clear();
-    double mX, mY;
-    Mouse::getInstance()->getScreenPos(mX, mY);
-    for(Entity* e : m_entities){
-        e->onUpdate();
-        if(e->isDirty()){
-            m_dirtyEnts.push_back(e);
-        }
-        if(e->intersects(mX,mY,0))
-            e->onCollision();
+void Scene::updateEntity(Entity* ent, double mouseX, double mouseY){
+    ent->onUpdate();
+
+    //probably a way to do this with recursion...
+    for (Entity* children : ent->getChildren()) {
+        updateEntity(children, mouseX, mouseY);
     }
     
+    if (ent->shouldDestroy()) {
+        m_destroyedEntities.push_back(ent->getId());
+        ent->getParent()->removeChild(ent);
+        delete ent;
+        return;
+    }
+    
+    //don't want to check for collisions, or send it to the engine if there isn't a mesh.
+    if (!ent->getMesh()) {
+        return;
+    }
+
+    if (ent->isDirty()) {
+        m_dirtyEnts.push_back(ent);
+    }
+
+    if (ent->intersects(mouseX, mouseY, 0)) {
+        ent->onCollision();
+    }
+
+}
+
+void Scene::update(RenderingPlugin* engine){
+    m_dirtyEnts.clear();
+    m_destroyedEntities.clear();
+
+    double mX, mY;
+    Mouse::getInstance()->getScreenPos(mX, mY);
+
+    for(Entity* e : m_entities){
+        updateEntity(e, mX, mY);
+    }
+
     if(m_dirtyEnts.size() > 0){
         engine->setDirtyEntities(m_dirtyEnts);
+    }
+
+    if (m_destroyedEntities.size() > 0) {
+        engine->destroyEntities(m_destroyedEntities);
     }
 }

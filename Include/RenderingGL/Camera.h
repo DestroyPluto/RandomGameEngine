@@ -17,7 +17,7 @@ namespace rendering {
         glm::mat4 getView();
 
         void setPosition(glm::vec3 translation);
-        glm::vec3 getPosition(){return m_position;}
+        const glm::vec3 getPosition(){return m_position;}
 
     private:
         float m_screenWidth;

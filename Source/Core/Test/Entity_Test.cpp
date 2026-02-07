@@ -8,12 +8,12 @@ TEST(EntityTest, get_set_mesh){
     Entity ent = Entity(id);
     EXPECT_EQ(ent.getId(),id);
 
-    Mesh mesh = Mesh();
+    Mesh* mesh = new Mesh();
     math::PointArray pnts = math::PointArray();
     pnts.push_back(math::Point(1.0,0.0,0.0));
     pnts.push_back(math::Point(0.0,1.0,0.0));
     pnts.push_back(math::Point(0.0,0.0,1.0));
-    mesh.setPoints(pnts, false);
+    mesh->setPoints(pnts, false);
     ent.setMesh(mesh);
     
     Mesh* newMesh = ent.getMesh();

@@ -59,6 +59,7 @@ jobs:
       shell: bash
       run: |
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          sudo apt-get update
           sudo apt-get install -y xorg-dev
         fi
     - name: Configure CMake
@@ -82,10 +83,17 @@ jobs:
       run: ctest --build-config ${{ matrix.build_type }}
 
     - name: copy files To bin
+      shell: bash
       run: |
-        cp ${{ github.workspace}}/DefaultFiles/* ${{ github.workspace}}/bin/${{ matrix.build_type }} -r
-        mkdir ${{ github.workspace}}/bin/${{ matrix.build_type }}/Shaders
-        cp ${{ github.workspace}}/Source/RenderingGL/Shaders/* ${{ github.workspace}}/bin/${{ matrix.build_type }}/Shaders -r
+        workspace="${{ github.workspace }}"
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          workspace=$(cygpath -u "$workspace")
+        fi
+
+        dest="$workspace/bin/${{ matrix.build_type }}"
+        mkdir -p "$dest/Shaders"
+        cp -r "$workspace/DefaultFiles/." "$dest/"
+        cp -r "$workspace/Source/RenderingGL/Shaders/." "$dest/Shaders/"
         
     - name: Upload exe to artifact
       uses: actions/upload-artifact@v4.6.2

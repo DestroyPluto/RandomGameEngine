@@ -30,11 +30,8 @@ std::vector<Entity*> SceneIO::loadScene(const char* path){
         else
             behaviour = BehaviourManager::getInstance()->getBehaviour(o.Behaviour);
 
-        GameObject* e = new GameObject(o.Id, behaviour);
+        GameObject* e = new GameObject(o.Id, behaviour, vecToVec3(o.Position), vecToVec3(o.Rotation), vecToVec3(o.Scale));
 
-        e->setPosition(vecToVec3(o.Position));
-        e->setRotation(vecToVec3(o.Rotation));
-        e->setScale(vecToVec3(o.Scale));
         e->setDirty(true);
         e->setTexturePath(o.Texture);
         

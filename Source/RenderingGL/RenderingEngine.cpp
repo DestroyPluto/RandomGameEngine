@@ -65,6 +65,7 @@ RenderingEngine::RenderingEngine(std::shared_ptr<core::Config> config){
     m_camera = nullptr;
     m_basicShader = nullptr;
     m_textShader = nullptr;
+    m_colourShader = nullptr;
 }
 
 HgError RenderingEngine::initPlugin() {
@@ -178,6 +179,9 @@ void RenderingEngine::renderloop(){
         //load any textures
         handleDirtyTextures();
 
+        //destroy any render commands for destroyed entities
+        handleDestroyedEnts();
+
     }
     //make sure to tell the main thread we are exiting
     m_keyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS);
@@ -188,6 +192,14 @@ HgError RenderingEngine::setDirtyEntities(std::vector<Entity*>& entities){
 
     for(Entity* ent : entities){
         m_dirtyEntities.insert(ent);
+    }
+    return HgError::eSuccess;
+}
+
+HgError RenderingEngine::destroyEntities(std::vector<uint32_t>& entIds){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    for(uint32_t id : entIds){
+        m_entsToDestroy.insert(id);
     }
     return HgError::eSuccess;
 }
@@ -242,6 +254,17 @@ void RenderingEngine::handleDirtyEnts(){
     m_dirtyEntities.clear();
 }
 
+void RenderingEngine::handleDestroyedEnts(){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    if(m_entsToDestroy.empty())
+        return;
+    for(uint32_t id : m_entsToDestroy){
+        m_renderCommands.erase(id);
+        m_TextRenderCommands.erase(id);
+    }
+    m_entsToDestroy.clear();
+}
+
 
 void RenderingEngine::handleDirtyTextures(){
     std::lock_guard<std::mutex>lock(m_RenderingMutex);
@@ -289,6 +312,7 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
     auto index = m_renderCommands.find(ent->getId());
     if(index != m_renderCommands.end()){
         RenderCommand* rc = &(index->second);
+        rc->setShouldRender(ent->renderMesh());
         rc->updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
         rc->setTextureID(ent->getTextureId());
         return HgError::eSuccess;
@@ -298,9 +322,12 @@ HgError RenderingEngine::updateRenderCommand(Entity* ent){
 }
 
 HgError RenderingEngine::createRenderCommand(Entity* ent){
+    //if the entity is a nullptr, then we can't do anything with it, so return failure.
+    if(!ent)
+        return HgError::eFailure;
+
     //TODO: proper key generation.
     uint32_t key = ent->getLayer();
-
     //text entities have a different render command
     if(ent->getLayer() == core::eText){
         DisplayText* txt = dynamic_cast<DisplayText*>(ent);
@@ -312,10 +339,10 @@ HgError RenderingEngine::createRenderCommand(Entity* ent){
     }else{
         //create a render command
         RenderCommand rc = RenderCommand(ent->getId(), ent->getMesh(), ent->getTextureId(), key);
+        rc.setShouldRender(ent->renderMesh());
         rc.updateModelMatrix(ent->getPosition(), ent->getRotation(), ent->getScale());
         //insert the rendercommand into the map
         m_renderCommands.emplace(ent->getId(), std::move(rc));
-        HgLogger::logMsg("Created Render Command!");
     } 
     return HgError::eSuccess;
 }

@@ -1,147 +1,136 @@
 #include "TerrainGenerator.h"
-#include "HgLogger.h"
-#include <SceneManager.h>
-#include <algorithm>
+#include "Chunk.h"
 #include <cmath>
 #include <glm/glm.hpp>
-#include <vector>
+#include "SceneManager.h"
+#include "HgLogger.h"
 
 using namespace client;
 using namespace core;
 using namespace math;
 
 void TerrainGenerator::initialize(){
-    m_width = 10.0f;
-    m_length = 10.0f;
-    m_maxHeight = 2.0f;
-    HgLogger::logDebug("TerrainGenerator initialized with width: %f, length: %f, maxHeight: %f", m_width, m_length, m_maxHeight);
-    createMesh();
+    
+    m_parent->setMesh(nullptr);
+    createChunks();
+
 }
 
-void TerrainGenerator::createMesh(){
-    //Mesh creation logic would go here
-    HgLogger::logDebug("Creating terrain mesh...");
+uint32_t TerrainGenerator::generateChunkId(float x, float y) {
 
-    Mesh terrainMesh = Mesh();
-    PointArray points;
+    //first cast to ints
+    uint16_t x_int = static_cast<uint16_t>(x);
+    uint16_t y_int = static_cast<uint16_t>(y);
 
-    // Choose how many samples (vertices) per unit length.
-    // Increase samplesPerUnit to make spacing smaller (more vertices).
-    // Example: samplesPerUnit = 10 -> 10 samples per unit length (segments), vertices = segments + 1
-    const int samplesPerUnit = 10;
+    uint32_t id = 100 + (x_int << 16 | y_int);
 
-    //generate points
-    m_vertexCountX = std::max(2, static_cast<int>(std::ceil(m_width * samplesPerUnit)) + 1);
-    m_vertexCountZ = std::max(2, static_cast<int>(std::ceil(m_length * samplesPerUnit)) + 1);
+    return id;
+}
 
-    float widthSpacing = m_width / static_cast<float>(m_vertexCountX - 1);
-    float lengthSpacing = m_length / static_cast<float>(m_vertexCountZ - 1);
+void TerrainGenerator::createChunks(){
+    uint64_t seed = 12345;
+    
+    int numChunks = static_cast<int>(std::ceil((m_renderRadius * 2) / (Chunk::CHUNK_SIZE - 1)));
 
-    // compute offsets so center of mesh sits at (0, 0) in X,Z
-    const float halfWidth = m_width * 0.5f;
-    const float halfLength = m_length * 0.5f;
+    Entity* playerEntity = SceneManager::getInstance()->getPlayerEntity();
+    //if the player doesn't exist yet, then just use the origin.
+    glm::vec2 playerPos(0.0f);
 
-    // Use integer loops for vertex counts and compute positions from indices.
-    // This ensures we produce exactly m_vertexCountX * m_vertexCountZ vertices
-    // and include the final row/column.
-    for (int ix = 0; ix < m_vertexCountX; ++ix) {
-        float x = ix * widthSpacing - halfWidth; // centered X
-        for (int iz = 0; iz < m_vertexCountZ; ++iz) {
-            float z = iz * lengthSpacing - halfLength; // centered Z
-            //TODO: add height generation logic here
-            float y = std::sin(x * z) / 10.0f;
-            points.push_back(Point(x, y, z));
+    if (playerEntity) {
+        playerPos.x = playerEntity->getPosition().x;
+        playerPos.y = playerEntity->getPosition().z;
+    }
+
+    float centerOffsetX = std::round(playerPos.x / Chunk::CHUNK_SIZE) * Chunk::CHUNK_SIZE;
+    float centerOffsetZ = std::round(playerPos.y / Chunk::CHUNK_SIZE) * Chunk::CHUNK_SIZE;
+
+    m_centerChunkCoords = glm::vec2(centerOffsetX, centerOffsetZ);
+
+    for (int i = 0; i < numChunks; ++i) {
+        for (int j = 0; j < numChunks; ++j) {
+            float x = ((i - numChunks / 2) * Chunk::CHUNK_SIZE) + centerOffsetX;
+            float z = ((j - numChunks / 2) * Chunk::CHUNK_SIZE) + centerOffsetZ;
+            
+            glm::vec3 chunkPos(x, 0.0f, z);
+            glm::vec2 chunkPos2D(x, z);
+            if (getDistanceBetweenTwoPoints2D(chunkPos2D, m_centerChunkCoords) > m_renderRadius)
+                continue;
+            //chunk id is a combination of the chunk's grid coordinates, 
+            // this allows us to easily identify and manage chunks based on their position in the world.
+            bool chunkExists = false;
+            uint32_t chunkId = generateChunkId(x, z);
+            for (Chunk* chunk : m_loadedChunks) {
+                if ((const uint32_t)chunk->getId() == chunkId) {
+                    //chunk already exists, just make sure it's rendered and move on.
+                    chunk->setRenderMesh(true);
+                    chunkExists = true;
+                    break;
+                }
+            }
+
+            if (!chunkExists){
+                //queue the chunk to be created
+                m_pendingChunks.emplace(chunkId, chunkPos, seed);
+            }
+
+           
         }
     }
+}
+void TerrainGenerator::loadPendingChunks() {
 
-    HgLogger::logDebug("Generated %zu points for terrain mesh.", points.toFloatVector().size() / 3);
+    int loadedThisFrame = 0;
 
-    //generate indices
-    std::vector<unsigned int> indices;
-    indices.reserve(static_cast<size_t>((m_vertexCountX - 1) * (m_vertexCountZ - 1) * 6));
-    for (int ix = 0; ix < m_vertexCountX - 1; ++ix) {
-        for (int iz = 0; iz < m_vertexCountZ - 1; ++iz) {
-
-            int topLeft = (ix * m_vertexCountZ) + iz;
-            int topRight = topLeft + 1;
-            int bottomLeft = ((ix + 1) * m_vertexCountZ) + iz;
-            int bottomRight = bottomLeft + 1;
-
-            indices.push_back(topLeft);
-            indices.push_back(bottomLeft);
-            indices.push_back(topRight);
-            indices.push_back(topRight);
-            indices.push_back(bottomLeft);
-            indices.push_back(bottomRight);
-        }
+    while (m_pendingChunks.size() > 0 && loadedThisFrame < m_chunksPerFrame) {
+        auto [chunkId, chunkPos, seed] = m_pendingChunks.front();
+        m_pendingChunks.pop();
+        Chunk* newChunk = new Chunk(chunkId, chunkPos, seed);
+        m_parent->addChild(newChunk);
+        m_loadedChunks.push_back(newChunk);
+        loadedThisFrame++;
     }
-
-    HgLogger::logDebug("Generated %zu indices for terrain mesh.", indices.size());
-
-    // Set vertex positions on mesh
-    terrainMesh.setPoints(points, false);
-    terrainMesh.setIndices(indices);
-
-    // --- Compute vertex normals ---
-    // Convert point array to float vector for easy indexed access (x,y,z)
-    std::vector<float> posFloats = points.toFloatVector();
-    const size_t vertexCount = posFloats.size() / 3;
-    std::vector<glm::vec3> normalAcc(vertexCount, glm::vec3(0.0f));
-
-    // For each triangle, compute face normal (area-weighted) and accumulate to each vertex
-    for (size_t i = 0; i + 2 < indices.size(); i += 3) {
-        unsigned int i0 = indices[i + 0];
-        unsigned int i1 = indices[i + 1];
-        unsigned int i2 = indices[i + 2];
-
-        glm::vec3 v0(
-            posFloats[i0 * 3 + 0],
-            posFloats[i0 * 3 + 1],
-            posFloats[i0 * 3 + 2]
-        );
-        glm::vec3 v1(
-            posFloats[i1 * 3 + 0],
-            posFloats[i1 * 3 + 1],
-            posFloats[i1 * 3 + 2]
-        );
-        glm::vec3 v2(
-            posFloats[i2 * 3 + 0],
-            posFloats[i2 * 3 + 1],
-            posFloats[i2 * 3 + 2]
-        );
-
-        glm::vec3 edge1 = v1 - v0;
-        glm::vec3 edge2 = v2 - v0;
-        glm::vec3 faceNormal = glm::cross(edge1, edge2); // area-weighted
-
-        normalAcc[i0] += faceNormal;
-        normalAcc[i1] += faceNormal;
-        normalAcc[i2] += faceNormal;
-    }
-
-    // Normalize accumulated normals and create PointArray for normals
-    PointArray normals;
-    normals = PointArray(); // ensure default constructed
-    for (size_t vi = 0; vi < vertexCount; ++vi) {
-        glm::vec3 n = normalAcc[vi];
-        float len = glm::length(n);
-        if (len > 1e-6f) {
-            n = glm::normalize(n);
-        } else {
-            // Fallback normal (up)
-            n = glm::vec3(0.0f, 1.0f, 0.0f);
-        }
-        normals.push_back(Point(n.x, n.y, n.z));
-    }
-
-    terrainMesh.setNormals(normals);
-
-    HgLogger::logDebug("Generated %zu normals for terrain mesh.", vertexCount);
-
-    m_parent->setDirty(true);
-    m_parent->setMesh(terrainMesh);
 }
 
 void TerrainGenerator::update(){
-    //Terrain generation logic would go here
+
+    loadPendingChunks();
+    
+    Entity* playerEntity = SceneManager::getInstance()->getPlayerEntity();
+    //if the player doesn't exist yet, then just use the origin.
+    glm::vec2 playerPos(0.0f);
+
+    if (playerEntity) {
+        playerPos.x = playerEntity->getPosition().x;
+        playerPos.y = playerEntity->getPosition().z;
+    }
+
+    //if we move away from the center chunk by more than the chunk size, we need to create new chunks around the player.
+    if (getDistanceBetweenTwoPoints2D(m_centerChunkCoords, playerPos) > (Chunk::CHUNK_SIZE/2) + 1) {
+        createChunks();
+
+        for (Chunk* chunk : m_loadedChunks) {
+
+            glm::vec2 chunkPos(chunk->getPosition().x, chunk->getPosition().z);
+
+            if (getDistanceBetweenTwoPoints2D(chunkPos, m_centerChunkCoords) > m_renderRadius) {
+                //turn chunk off, but don't delete it, we may need it again if the player moves back.
+                chunk->setRenderMesh(false);
+            }
+
+            if (getDistanceBetweenTwoPoints2D(chunkPos, m_centerChunkCoords) > m_loadRadius) {
+                //if the chunk is outside the load radius, we can safely delete it.
+                m_loadedChunks.erase(std::remove(m_loadedChunks.begin(), m_loadedChunks.end(), chunk), m_loadedChunks.end());
+                chunk->markForDestruction();
+            }
+        }
+    }
+   
+
+}
+
+float TerrainGenerator::getDistanceBetweenTwoPoints2D(glm::vec2 pos1, glm::vec2 pos2){
+
+    float dx = pos1.x - pos2.x;
+    float dz = pos1.y - pos2.y;
+    return std::sqrt(dx * dx + dz * dz);
 }

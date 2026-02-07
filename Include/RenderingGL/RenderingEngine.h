@@ -27,6 +27,7 @@ namespace rendering
 		//override functions
 		virtual std::thread startPlugin() override;
 		virtual core::HgError setDirtyEntities(std::vector<core::Entity *> &entities) override;
+        virtual core::HgError destroyEntities(std::vector<uint32_t>& entIds) override;
 		virtual core::HgError addTexture(core::HgTexture* texture) override;
 		virtual core::HgError closePlugin() override;
 		virtual core::HgError setCameraPos(glm::vec3 translation) override;
@@ -49,10 +50,12 @@ namespace rendering
 		void renderloop();
 		void handleDirtyEnts();
 		void handleDirtyTextures();
+        void handleDestroyedEnts();
 	private:
 		GLFWwindow *m_window;
 		std::mutex m_RenderingMutex;
 		std::unordered_set<core::Entity *> m_dirtyEntities;
+		std::unordered_set<uint32_t> m_entsToDestroy;
 		std::unordered_map<uint32_t, RenderCommand> m_renderCommands;
 		std::unordered_map<uint32_t, TextRenderCommand> m_TextRenderCommands;
 		std::unordered_map<const char*, core::HgTexture*> m_textures;

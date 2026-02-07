@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "HgTexture.h"
 #include <string>
+#include <algorithm>
 //#include "Behaviour.h"
 
 namespace core{
@@ -17,8 +18,8 @@ class Entity{
 
     public:
         Entity(uint32_t id);
-        void setMesh(Mesh mesh){m_mesh = mesh;}
-        Mesh* getMesh(){return &m_mesh;}
+        void setMesh(Mesh* mesh){m_mesh = mesh;}
+        Mesh* getMesh(){return m_mesh;}
         bool isDirty(){return m_isDirty;}
         void setDirty(bool isDirty){m_isDirty = isDirty;}
         uint32_t getId(){return m_id;}
@@ -53,10 +54,30 @@ class Entity{
         virtual void onCollision(); //specifically the mouse
         virtual void onUpdate();
         virtual void onClick();
+
+        void addChild(Entity* child) {
+            m_children.push_back(child);
+            child->setParent(this);
+        }
+        void removeChild(Entity* child) {
+            m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
+            child->setParent(nullptr);
+        }
+
+        const std::vector<Entity*> getChildren() { return m_children; }
+        void setParent(Entity* parent) { m_parent = parent; }
+        Entity* getParent() { return m_parent; }
+
+        bool renderMesh() { return m_renderMesh; }
+        void setRenderMesh(bool render) { m_renderMesh = render; setDirty(true); }
+
+        bool shouldDestroy() { return m_shouldDestroy; }
+        void markForDestruction() { m_shouldDestroy = true; }
+
         virtual ~Entity();
 
     protected:
-        Mesh m_mesh;
+        Mesh* m_mesh = nullptr;
 
     private:
         glm::vec3 m_position;
@@ -68,6 +89,9 @@ class Entity{
         hgLayer m_layer = eWorld;
         uint32_t m_id;
         bool m_isDirty;
-
+        std::vector<Entity*> m_children;
+        Entity* m_parent;
+        bool m_renderMesh = true;
+        bool m_shouldDestroy = false;
 };
 }

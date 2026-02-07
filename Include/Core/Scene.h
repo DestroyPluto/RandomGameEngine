@@ -17,6 +17,7 @@ private:
 
     std::vector<Entity*> m_entities = std::vector<Entity*>();
     std::vector<Entity*> m_dirtyEnts = std::vector<Entity*>();
-
+    std::vector<uint32_t> m_destroyedEntities = std::vector<uint32_t>();
+    void updateEntity(Entity* ent, double mouseX, double mouseY);
     };
 }
