@@ -19,4 +19,5 @@ PUBLIC
 target_link_libraries(${PROJECT_NAME} 
 	Core
     IO
+    Math
 )
