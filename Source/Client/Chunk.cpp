@@ -15,9 +15,11 @@ Chunk::Chunk(uint32_t id, glm::vec3 pos, uint64_t seed) : Entity(id){
     //need to be sure it is initialized with a position, otherwise the noise value will be wrong.
     setPosition(pos);
     m_seed = seed;
+    //TODO:probably revisit the different seeds
+    m_BaseTerrainNoiseGenerator = Noise(m_seed);
+    m_SecondaryTerrainNoiseGenerator = Noise(m_seed * 2);
+    m_BiomeNoiseGenerator = Noise(m_seed * 3);
     createMesh();
-    m_noiseGenerator0 = Noise(seed);
-    m_noiseGenerator1 = Noise(seed * 2);
 }
 
 
@@ -90,7 +92,6 @@ void Chunk::createIndices(core::Mesh* mesh) {
 }
 
 void Chunk::createNormals(core::Mesh* mesh) {
-    //Normal creation logic would go here.
 
     // --- Compute vertex normals ---
     // Convert point array to float vector for easy indexed access (x,y,z)
@@ -146,34 +147,95 @@ void Chunk::createNormals(core::Mesh* mesh) {
 
 }
 
-
 // Overload to accept chunk position to avoid repeated getPosition() calls
 float Chunk::calculateHeight(float x, float z, const glm::vec3& chunkPos) {
     float world_x = chunkPos.x + x;
     float world_z = chunkPos.z + z;
 
-    constexpr float weight0 = 1.0f;
-    constexpr float weight1 = 0.5f;
-    constexpr float weight2 = 0.25f;
-    constexpr float weight3 = 0.5f;
-    constexpr float weight4 = 0.25f;
+    // Sample biome noise and map from [-1, 1] to [0, 1]
+    float biomeValue = m_BiomeNoiseGenerator.generateNoise2d(world_x * 0.001, world_z * 0.005);
+    float t = (biomeValue + 1.0f) * 0.5f; // t in [0, 1]
 
-    float noise0 = m_noiseGenerator0.generateNoise2d(world_x, world_z) * weight0;
-    float noise1 = m_noiseGenerator1.generateNoise2d(world_x * 2.0f, world_z * 2.0f) * weight1;
-    float noise2 = m_noiseGenerator1.generateNoise2d(4.0f * world_x + 4.0f, 4.0f * world_z + 4.0f) * weight2;
+    // Define biome thresholds (adjust as needed)
+    float plainsEnd = 0.50f;
+    float hillsEnd = 0.70f;
 
-    float noise3 = Noise::simplexNoise(world_x, world_z, noise0) * weight3;
-    float noise4 = Noise::simplexNoise(world_x * 0.5f, world_z * 0.5f, noise1) * weight4;
+    // Calculate heights for each biome
+    float plainsHeight = calculatePlains(world_x, world_z);
+    float hillsHeight = calculateHills(world_x, world_z);
+    float mountainsHeight = calculateMountains(world_x, world_z);
 
-    float finalHeight = (noise0 + noise1 + noise2 + noise3 + noise4) / (weight0 + weight1 + weight2 + weight3 + weight4);
+    float height = 0.0f;
+    if (t < plainsEnd) {
+        // Lerp between plains and hills
+        float localT = t / plainsEnd;
+        height = std::lerp(plainsHeight, hillsHeight, localT);
+    } else if (t < hillsEnd) {
+        // Lerp between hills and mountains
+        float localT = (t - plainsEnd) / (hillsEnd - plainsEnd);
+        height = std::lerp(hillsHeight, mountainsHeight, localT);
+    } else {
+        // Use mountains
+        height = mountainsHeight;
+    }
 
-    return finalHeight * 0.1f;
+    return height;
 }
 
-// Backward compatibility for existing calls
 float Chunk::calculateHeight(float x, float z) {
     return calculateHeight(x, z, getPosition());
 }
+
+float Chunk::calculatePlains(float x, float z) {
+
+    // Use low-frequency noise for smoothness
+    float baseFreq = 0.05f; // Lower = smoother, broader hills
+    float noise0 = m_BaseTerrainNoiseGenerator.generateNoise2d(x * baseFreq, z * baseFreq);
+
+    // Optionally add a very subtle higher-frequency layer for gentle detail
+    float detailFreq = 0.1f;
+    float noise1 = m_SecondaryTerrainNoiseGenerator.generateNoise2d(x * detailFreq, z * detailFreq) * 0.2f;
+
+    // Combine and normalize
+    float height = (noise0 + noise1) / 1.2f; // Weighted sum
+
+    // Scale to desired amplitude (e.g., 0.0 to 1.0, then scale down for gentle hills)
+    return height * 0.15f; // 0.15f controls the max height of hills
+
+}
+
+float Chunk::calculateHills(float x, float z) {
+    // Use low-frequency noise for smoothness
+    float baseFreq = 0.05f; // Lower = smoother, broader hills
+    float noise0 = m_BaseTerrainNoiseGenerator.generateNoise2d(x * baseFreq, z * baseFreq);
+
+    // Optionally add a very subtle higher-frequency layer for gentle detail
+    float detailFreq = 0.1f;
+    float noise1 = m_SecondaryTerrainNoiseGenerator.generateNoise2d(x * detailFreq, z * detailFreq) * 0.2f;
+
+    // Combine and normalize
+    float height = (noise0 + noise1) / 1.2f; // Weighted sum
+
+    // Scale to desired amplitude (e.g., 0.0 to 1.0, then scale down for gentle hills)
+    return height; // 0.15f controls the max height of hills
+}
+
+float Chunk::calculateMountains(float x, float z) {
+    // Use low-frequency noise for smooth, broad mountains
+    float baseFreq = 0.07f; // Slightly higher than hills for more variation, but still smooth
+    float noise0 = m_BaseTerrainNoiseGenerator.generateNoise2d(x * baseFreq, z * baseFreq);
+
+    // Optional: add a subtle detail layer
+    float detailFreq = 0.14f;
+    float noise1 = m_SecondaryTerrainNoiseGenerator.generateNoise2d(x * detailFreq, z * detailFreq) * 0.2f;
+
+    // Combine and normalize
+    float height = (noise0 + noise1) / 1.2f;
+    float finalHeight = std::pow(std::max(0.0f, height), 3.0f);
+    // Scale up for tall, smooth mountains
+    return height * 10.0f; // 2.5f controls the max height of mountains
+}
+
 
 void Chunk::onCollision(){
     //do nothing - we don't currently care about chunk collisions.

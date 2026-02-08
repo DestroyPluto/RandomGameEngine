@@ -26,13 +26,18 @@ namespace client {
         float calculateHeight(float x, float z);
         float calculateHeight(float x, float z, const glm::vec3& chunkPos);
 
+        float calculatePlains(float x, float z);
+        float calculateHills(float x, float z);
+        float calculateMountains(float x, float z);
 
         int m_vertexCountX = 16;
         int m_vertexCountZ = 16;
 
-        math::Noise m_noiseGenerator0;
-        math::Noise m_noiseGenerator1;
-        uint64_t m_seed;
+        math::Noise m_BaseTerrainNoiseGenerator;
+        math::Noise m_SecondaryTerrainNoiseGenerator;
+        math::Noise m_BiomeNoiseGenerator;
 
+        uint64_t m_seed;
+        
     };
 }

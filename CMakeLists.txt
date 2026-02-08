@@ -28,8 +28,8 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Include/glad
         ${PROJECT_SOURCE_DIR}/Include/KHR
         ${CMAKE_SOURCE_DIR}/Include/RenderingGL
-	      ${CMAKE_SOURCE_DIR}/Include/Core
-	      ${CMAKE_SOURCE_DIR}/Include/Math
+	    ${CMAKE_SOURCE_DIR}/Include/Core
+	    ${CMAKE_SOURCE_DIR}/Include/Math
         ${CMAKE_SOURCE_DIR}/Include/IO
         ${CMAKE_SOURCE_DIR}/Include/Client
 )
