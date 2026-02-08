@@ -67,7 +67,13 @@ HgError Mesh::setTextureIndices(std::vector<unsigned int> textureIndices){
     m_textureIndicies = textureIndices;
     return HgError::eSuccess;
 }
+
 HgError Mesh::setNormalIndices(std::vector<unsigned int> normalIndices){
     m_normalIndicies = normalIndices;
+    return HgError::eSuccess;
+}
+
+HgError Mesh::setColours(PointArray colours){
+    m_colours = colours;
     return HgError::eSuccess;
 }

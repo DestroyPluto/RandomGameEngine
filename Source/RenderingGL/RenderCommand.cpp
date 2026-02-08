@@ -12,6 +12,7 @@ RenderCommand::RenderCommand(uint32_t id, Mesh* mesh, uint32_t textureId, uint32
     m_geometry->addAttribute(Attribute::aVertex, mesh->getPoints().toFloatVector());
     m_geometry->addAttribute(Attribute::aTexture, mesh->getUvs());
     m_geometry->addAttribute(Attribute::aNormal, mesh->getNormals().toFloatVector());
+    m_geometry->addAttribute(Attribute::aColour, mesh->getColours().toFloatVector());
     m_geometry->setIndices(mesh->getIndices());
     m_modelMatrix = glm::mat4(1.0f); //make sure it is initialized
     m_geometry->addTexture(textureId);

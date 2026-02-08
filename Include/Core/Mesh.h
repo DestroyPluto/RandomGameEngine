@@ -13,6 +13,7 @@ public:
     HgError setPoints(math::PointArray points, bool b2D);
     HgError setNormals(math::PointArray normals);
     HgError setUV(std::vector<unsigned int> uvs);
+    HgError setColours(math::PointArray colours);
 
     HgError setIndices(std::vector<unsigned int> indices);
     HgError setTextureIndices(std::vector<unsigned int> textureIndices);
@@ -24,17 +25,21 @@ public:
     math::PointArray getNormals() { return m_Normals; };
     std::vector<unsigned int> getTextureIndices() { return m_textureIndicies; };
     std::vector<unsigned int> getNormalIndices() { return m_normalIndicies; };
-    
+    math::PointArray getColours() { return m_colours; };
+
     bool is2D(){return m_b2D;}
 
 private:
     math::PointArray m_points;
     math::PointArray m_Normals;
+    math::PointArray m_colours;
+
     std::vector<unsigned int> m_UV;
 
     std::vector<unsigned int> m_indicies;
     std::vector<unsigned int> m_textureIndicies;
     std::vector<unsigned int> m_normalIndicies;
+    
     bool m_b2D;
 };
 }

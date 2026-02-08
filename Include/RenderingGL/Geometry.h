@@ -8,6 +8,7 @@ namespace rendering{
         aVertex = 0,
         aTexture = 1,
         aNormal = 2,
+        aColour = 3
     } Attribute;
 
 class Geometry{

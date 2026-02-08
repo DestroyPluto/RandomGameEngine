@@ -54,15 +54,18 @@ void Chunk::createPoints(core::Mesh* mesh) {
     glm::vec3 chunkPos = getPosition();
 
     PointArray points;
+    PointArray colours;
     for (int ix = 0; ix < m_vertexCountX; ++ix) {
         float x = ix * widthSpacing - halfWidth; // centered X
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
             float z = iz * lengthSpacing - halfLength; // centered Z
             float y = calculateHeight(x, z, chunkPos); // pass chunkPos to avoid repeated getPosition()
             points.push_back(Point(x, y, z));
+            colours.push_back(Point(0.0f, 1.0f, 0.0f)); // Placeholder color (green)
         }
     }
     mesh->setPoints(points, false);
+    mesh->setColours(colours);
 
 }
 

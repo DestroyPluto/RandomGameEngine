@@ -27,7 +27,7 @@ namespace client {
 
         std::vector<Chunk*> m_loadedChunks;
         glm::vec2 m_centerChunkCoords;
-        float m_renderRadius = 48.0f;
+        float m_renderRadius = 64.0f;
         float m_loadRadius = 128.0f;
         
         std::queue<std::tuple<uint32_t, glm::vec3, uint64_t>> m_pendingChunks;
