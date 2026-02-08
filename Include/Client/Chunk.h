@@ -13,6 +13,9 @@ namespace client {
             virtual void onCollision() override;
             static constexpr int CHUNK_SIZE = 16;
 
+            bool setPointHeight(float worldX, float worldZ, float newY);
+            bool setRegionHeight(float centerWorldX, float centerWorldZ, float radius, float newY);
+
     protected:
 
     private:

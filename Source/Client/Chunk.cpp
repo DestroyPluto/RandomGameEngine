@@ -239,6 +239,197 @@ float Chunk::calculateMountains(float x, float z) {
     return height * 10.0f; // 2.5f controls the max height of mountains
 }
 
+bool Chunk::setPointHeight(float worldX, float worldZ, float newY) {
+    core::Mesh* mesh = getMesh();
+    if (!mesh) {
+        return false;
+    }
+
+    glm::vec3 chunkPos = getPosition();
+    
+    // Convert world coordinates to chunk-local coordinates
+    float localX = worldX - chunkPos.x;
+    float localZ = worldZ - chunkPos.z;
+
+    // Calculate grid spacing
+    float widthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountX - 1);
+    float lengthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountZ - 1);
+    const float halfWidth = CHUNK_SIZE * 0.5f;
+    const float halfLength = CHUNK_SIZE * 0.5f;
+
+    // Convert local coordinates to grid indices
+    // Reverse the transformation from createPoints: x = ix * widthSpacing - halfWidth
+    float ixFloat = (localX + halfWidth) / widthSpacing;
+    float izFloat = (localZ + halfLength) / lengthSpacing;
+
+    // Round to nearest vertex
+    int ix = static_cast<int>(std::round(ixFloat));
+    int iz = static_cast<int>(std::round(izFloat));
+
+    // Check if indices are within bounds
+    if (ix < 0 || ix >= m_vertexCountX || iz < 0 || iz >= m_vertexCountZ) {
+        return false; // Point is outside chunk bounds
+    }
+
+    // Get the point array
+    PointArray points = mesh->getPoints();
+
+    // Define the radius of influence (in grid units)
+    const int influenceRadius = 3; // Affects points within 3 vertices in each direction
+
+    // Iterate through all vertices within the influence radius
+    for (int dx = -influenceRadius; dx <= influenceRadius; ++dx) {
+        for (int dz = -influenceRadius; dz <= influenceRadius; ++dz) {
+            int targetIx = ix + dx;
+            int targetIz = iz + dz;
+
+            // Skip if out of bounds
+            if (targetIx < 0 || targetIx >= m_vertexCountX || 
+                targetIz < 0 || targetIz >= m_vertexCountZ) {
+                continue;
+            }
+
+            // Calculate vertex index
+            int vertexIndex = (targetIx * m_vertexCountZ) + targetIz;
+
+            // Verify vertex index is valid
+            if (vertexIndex < 0 || vertexIndex >= points.size()) {
+                continue;
+            }
+
+            // Calculate distance from target point to current vertex
+            float distance = std::sqrt(static_cast<float>(dx * dx + dz * dz));
+
+            // Calculate influence weight using smooth falloff (inverse quadratic)
+            // At distance 0, weight = 1.0; at influenceRadius, weight approaches 0
+            float weight = 1.0f - (distance / static_cast<float>(influenceRadius));
+            weight = std::max(0.0f, weight); // Clamp to [0, 1]
+            weight = weight * weight; // Square for smoother falloff
+
+            // Get the existing point
+            Point& oldPoint = points[vertexIndex];
+            float currentY = static_cast<float>(oldPoint.Y());
+
+            // Lerp between current height and new height based on weight
+            float targetY = std::lerp(currentY, newY, weight);
+
+            // Create updated point
+            Point updatedPoint(static_cast<float>(oldPoint.X()), targetY, static_cast<float>(oldPoint.Z()));
+            
+            // Update the point in the array
+            points.setPoint(vertexIndex, updatedPoint);
+        }
+    }
+
+    // Update the mesh with modified points
+    mesh->setPoints(points, false);
+
+    // Recalculate normals to reflect the height changes
+    createNormals(mesh);
+
+    // Mark chunk as dirty for re-rendering
+    setDirty(true);
+
+    return true;
+}
+
+bool Chunk::setRegionHeight(float centerWorldX, float centerWorldZ, float radius, float newY) {
+    core::Mesh* mesh = getMesh();
+    if (!mesh) {
+        return false;
+    }
+
+    glm::vec3 chunkPos = getPosition();
+    
+    // Calculate grid spacing
+    float widthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountX - 1);
+    float lengthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountZ - 1);
+    const float halfWidth = CHUNK_SIZE * 0.5f;
+    const float halfLength = CHUNK_SIZE * 0.5f;
+
+    // Get the point array
+    PointArray points = mesh->getPoints();
+
+    // Track if any points were modified
+    bool modified = false;
+
+    // Define falloff margin (smooth transition at edges)
+    const float falloffMargin = 2.0f; // Units in world space
+
+    // Iterate through all vertices in the chunk
+    for (int ix = 0; ix < m_vertexCountX; ++ix) {
+        for (int iz = 0; iz < m_vertexCountZ; ++iz) {
+            // Calculate vertex index
+            int vertexIndex = (ix * m_vertexCountZ) + iz;
+
+            if (vertexIndex < 0 || vertexIndex >= points.size()) {
+                continue;
+            }
+
+            // Get vertex local coordinates
+            float localX = ix * widthSpacing - halfWidth;
+            float localZ = iz * lengthSpacing - halfLength;
+
+            // Convert to world coordinates
+            float worldX = chunkPos.x + localX;
+            float worldZ = chunkPos.z + localZ;
+
+            // Calculate distance from center point
+            float dx = worldX - centerWorldX;
+            float dz = worldZ - centerWorldZ;
+            float distance = std::sqrt(dx * dx + dz * dz);
+
+            // Skip points outside the influence radius
+            if (distance > radius + falloffMargin) {
+                continue;
+            }
+
+            // Calculate weight based on distance
+            float weight = 0.0f;
+            if (distance < radius) {
+                // Inside the core radius - full effect
+                weight = 1.0f;
+            } else {
+                // In the falloff margin - smooth transition
+                float falloffDist = distance - radius;
+                weight = 1.0f - (falloffDist / falloffMargin);
+                weight = std::max(0.0f, std::min(1.0f, weight));
+                // Apply smoothstep for smoother falloff
+                weight = weight * weight * (3.0f - 2.0f * weight);
+            }
+
+            // Get the existing point
+            Point& oldPoint = points[vertexIndex];
+            float currentY = static_cast<float>(oldPoint.Y());
+
+            // Lerp between current height and new height based on weight
+            float targetY = std::lerp(currentY, newY, weight);
+
+            // Create updated point
+            Point updatedPoint(static_cast<float>(oldPoint.X()), targetY, static_cast<float>(oldPoint.Z()));
+            
+            // Update the point in the array
+            points.setPoint(vertexIndex, updatedPoint);
+            modified = true;
+        }
+    }
+
+    if (!modified) {
+        return false; // No points in this chunk were affected
+    }
+
+    // Update the mesh with modified points
+    mesh->setPoints(points, false);
+
+    // Recalculate normals to reflect the height changes
+    createNormals(mesh);
+
+    // Mark chunk as dirty for re-rendering
+    setDirty(true);
+
+    return true;
+}
+
 
 void Chunk::onCollision(){
     //do nothing - we don't currently care about chunk collisions.

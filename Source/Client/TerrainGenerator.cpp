@@ -22,7 +22,8 @@ uint32_t TerrainGenerator::generateChunkId(float x, float y) {
     uint16_t x_int = static_cast<uint16_t>(x);
     uint16_t y_int = static_cast<uint16_t>(y);
 
-    uint32_t id = 100 + (x_int << 16 | y_int);
+    const uint32_t chunkIdOffset = 300; // Arbitrary offset to avoid low IDs reserved for other entities
+    uint32_t id = chunkIdOffset + (x_int << 16 | y_int);
 
     return id;
 }
@@ -72,8 +73,6 @@ void TerrainGenerator::createChunks(){
                 //queue the chunk to be created
                 m_pendingChunks.emplace(chunkId, chunkPos, seed);
             }
-
-           
         }
     }
 }
@@ -124,13 +123,54 @@ void TerrainGenerator::update(){
             }
         }
     }
-   
-
 }
 
 float TerrainGenerator::getDistanceBetweenTwoPoints2D(glm::vec2 pos1, glm::vec2 pos2){
-
     float dx = pos1.x - pos2.x;
     float dz = pos1.y - pos2.y;
     return std::sqrt(dx * dx + dz * dz);
 }
+
+Chunk* TerrainGenerator::getChunkAtWorldPosition(float worldX, float worldZ) {
+    // Calculate which chunk contains this world position
+    // Chunks are centered at multiples of CHUNK_SIZE, so we use round to find the nearest chunk center
+    float chunkX = std::round(worldX / Chunk::CHUNK_SIZE) * Chunk::CHUNK_SIZE;
+    float chunkZ = std::round(worldZ / Chunk::CHUNK_SIZE) * Chunk::CHUNK_SIZE;
+    
+    uint32_t chunkId = generateChunkId(chunkX, chunkZ);
+    
+    // Find the chunk in loaded chunks
+    for (Chunk* chunk : m_loadedChunks) {
+        if (chunk->getId() == chunkId) {
+            return chunk;
+        }
+    }
+    
+    return nullptr;
+}
+
+void TerrainGenerator::setRegionHeight(float centerWorldX, float centerWorldZ, float radius, float newY) {
+    // Add falloff margin to the influence distance
+    const float falloffMargin = 2.0f;
+    float maxInfluenceDistance = radius + falloffMargin;
+    
+    // Check all loaded chunks to see if they might contain vertices within the region
+    for (Chunk* chunk : m_loadedChunks) {
+        glm::vec3 chunkPos = chunk->getPosition();
+        
+        // Calculate the distance from the region center to the chunk center
+        float dx = chunkPos.x - centerWorldX;
+        float dz = chunkPos.z - centerWorldZ;
+        float distanceToChunk = std::sqrt(dx * dx + dz * dz);
+        
+        // A chunk might contain affected vertices if the region overlaps with the chunk's bounds
+        // Chunk extends CHUNK_SIZE/2 in each direction from its center
+        float chunkRadius = Chunk::CHUNK_SIZE * 0.5f * 1.415f; // Multiply by sqrt(2) for diagonal
+        
+        if (distanceToChunk <= maxInfluenceDistance + chunkRadius) {
+            // This chunk might have vertices within the region
+            chunk->setRegionHeight(centerWorldX, centerWorldZ, radius, newY);
+        }
+    }
+}
+

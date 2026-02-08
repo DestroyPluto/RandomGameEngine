@@ -19,15 +19,19 @@ namespace client {
            // delete m_noiseGenerator1;
        }
 
+    public:
+        void setRegionHeight(float centerWorldX, float centerWorldZ, float radius, float newY);
+
     private:
         void createChunks();
         float getDistanceBetweenTwoPoints2D(glm::vec2 pos1, glm::vec2 pos2);
         void loadPendingChunks();
         uint32_t generateChunkId(float x, float z);
+        Chunk* getChunkAtWorldPosition(float worldX, float worldZ);
 
         std::vector<Chunk*> m_loadedChunks;
         glm::vec2 m_centerChunkCoords;
-        float m_renderRadius = 64.0f;
+        float m_renderRadius = 48.0f;
         float m_loadRadius = 128.0f;
         
         std::queue<std::tuple<uint32_t, glm::vec3, uint64_t>> m_pendingChunks;

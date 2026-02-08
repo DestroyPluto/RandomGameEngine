@@ -40,4 +40,5 @@ std::vector<float> PointArray::toFloatVector(){
         floatArray.push_back(p.Z());
     }
     return floatArray;
+
 }
