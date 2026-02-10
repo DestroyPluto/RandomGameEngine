@@ -5,6 +5,7 @@
 #include <string>
 #include "RenderingPlugin.h"
 #include "Entity.h"
+#include <glm/vec2.hpp>
 
 namespace client{
     class SceneManager{
@@ -30,6 +31,8 @@ namespace client{
         //TODO: should these maybe be in a better place?
         void setCameraPosition(glm::vec3 position);
         glm::vec3 getCameraPosition();
+        void setCameraRotation(float yaw, float pitch);
+        glm::vec2 getCameraRotation();
 
         void setPlayerEntity(core::Entity* player) { m_playerEntity = player; }
         core::Entity* getPlayerEntity() { return m_playerEntity; }

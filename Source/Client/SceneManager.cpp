@@ -47,3 +47,11 @@ void SceneManager::setCameraPosition(glm::vec3 position){
 glm::vec3 SceneManager::getCameraPosition(){
     return m_engine->getCameraPos();
 }
+
+void SceneManager::setCameraRotation(float yaw, float pitch){
+    m_engine->setCameraRotation(yaw, pitch);
+}
+
+glm::vec2 SceneManager::getCameraRotation(){
+    return m_engine->getCameraRotation();
+}

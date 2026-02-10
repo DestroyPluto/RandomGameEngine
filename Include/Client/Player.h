@@ -13,6 +13,12 @@ namespace client{
 
         private:
         float m_speed = 2.0;
+        float m_yaw = 0.0f;
+        float m_pitch = 0.0f;
+        double m_lastMouseX = 0.0;
+        double m_lastMouseY = 0.0;
+        bool m_hasMouse = false;
+        float m_mouseSensitivity = 0.5f;
         void handleMovement();
     };
 }

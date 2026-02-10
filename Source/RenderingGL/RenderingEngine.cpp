@@ -91,7 +91,7 @@ HgError RenderingEngine::initPlugin() {
     }
     glfwSetWindowUserPointer(m_window, this);
     glViewport(0,0,800,600);
-    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     glfwSetKeyCallback(m_window, key_callback);
@@ -226,6 +226,19 @@ HgError RenderingEngine::setCameraPos(glm::vec3 position){
 
 glm::vec3 RenderingEngine::getCameraPos(){
     return m_camera->getPosition();
+}
+
+HgError RenderingEngine::setCameraRotation(float yaw, float pitch){
+    std::lock_guard<std::mutex>lock(m_RenderingMutex);
+    if(m_camera){
+        m_camera->setRotation(yaw, pitch);
+        return HgError::eSuccess;
+    }
+    return HgError::eFailure;
+}
+
+glm::vec2 RenderingEngine::getCameraRotation(){
+    return m_camera->getRotation();
 }
 
 void RenderingEngine::handleDirtyEnts(){

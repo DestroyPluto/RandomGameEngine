@@ -18,12 +18,16 @@ namespace rendering {
 
         void setPosition(glm::vec3 translation);
         const glm::vec3 getPosition(){return m_position;}
+        void setRotation(float yaw, float pitch);
+        const glm::vec2 getRotation(){return glm::vec2(m_yaw, m_pitch);}
 
     private:
         float m_screenWidth;
         float m_screenHeight;
         
         glm::vec3 m_position = glm::vec3(0.0f);
+        float m_yaw = 0.0f;
+        float m_pitch = 0.0f;
 
     };
 }

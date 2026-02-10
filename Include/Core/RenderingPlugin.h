@@ -2,6 +2,7 @@
 #include <cstdint>
 #include "HgError.h"
 #include <thread>
+#include <glm/vec2.hpp>
 #include "Entity.h"
 #include "Config.h"
 #include <memory>
@@ -47,6 +48,16 @@ class RenderingPlugin{
          * get the Camera position, in world coordinates
          */
         virtual glm::vec3 getCameraPos() = 0;
+
+        /**
+        * Set the Camera rotation as yaw and pitch in radians.
+        */
+        virtual HgError setCameraRotation(float yaw, float pitch) = 0;
+
+        /**
+         * get the Camera rotation as yaw and pitch in radians.
+         */
+        virtual glm::vec2 getCameraRotation() = 0;
 
         /**
          * get the config for the rendering plugin.
