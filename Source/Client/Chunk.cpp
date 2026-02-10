@@ -59,9 +59,20 @@ void Chunk::createPoints(core::Mesh* mesh) {
         float x = ix * widthSpacing - halfWidth; // centered X
         for (int iz = 0; iz < m_vertexCountZ; ++iz) {
             float z = iz * lengthSpacing - halfLength; // centered Z
-            float y = calculateHeight(x, z, chunkPos); // pass chunkPos to avoid repeated getPosition()
+            
+            float world_x = chunkPos.x + x;
+            float world_z = chunkPos.z + z;
+
+            float y = calculateHeight(world_x, world_z);
             points.push_back(Point(x, y, z));
-            colours.push_back(Point(0.0f, 1.0f, 0.0f)); // Placeholder color (green)
+            sBiome biome = getBiomeType(world_x, world_z);
+            if (biome.type == Lake) {
+                float blue = biome.transition / 2.0f; // Transition from 0.5 to 1.0 as we go from deep lake to plains
+                colours.push_back(Point(blue, blue, 0.8f)); // Placeholder color (blue)
+            } else {
+                colours.push_back(Point(0.0f, 1.0f, 0.0f)); // Placeholder color (green)
+            }
+
         }
     }
     mesh->setPoints(points, false);
@@ -150,43 +161,65 @@ void Chunk::createNormals(core::Mesh* mesh) {
 
 }
 
-// Overload to accept chunk position to avoid repeated getPosition() calls
-float Chunk::calculateHeight(float x, float z, const glm::vec3& chunkPos) {
-    float world_x = chunkPos.x + x;
-    float world_z = chunkPos.z + z;
-
+Chunk::sBiome Chunk::getBiomeType(float x, float z) {
     // Sample biome noise and map from [-1, 1] to [0, 1]
-    float biomeValue = m_BiomeNoiseGenerator.generateNoise2d(world_x * 0.001, world_z * 0.005);
+    float biomeValue = m_BiomeNoiseGenerator.generateNoise2d(x * 0.001, z * 0.005);
     float t = (biomeValue + 1.0f) * 0.5f; // t in [0, 1]
 
     // Define biome thresholds (adjust as needed)
+    float lakeThreshold = 0.3f; // Below this is lake
     float plainsEnd = 0.50f;
     float hillsEnd = 0.70f;
 
+    if (t < lakeThreshold) {
+        float transition = t / lakeThreshold; // Transition from 0 to 1 as we go from deep lake to plains
+        return { Lake,  transition * 0.95f};
+    }
+
+    if (t < plainsEnd) {
+        float transition = (t - lakeThreshold) / (plainsEnd - lakeThreshold); // Transition from 0 to 1 as we go from deep lake to plains
+
+        return { Plains, transition };
+    }
+
+    if (t < hillsEnd) {
+        float transition = (t - plainsEnd) / (hillsEnd - plainsEnd); // Transition from 0 to 1 as we go from deep lake to plains
+
+        return { Hills, transition };
+    }
+    float transition = (t - hillsEnd) / (1.0f - hillsEnd); // Transition from 0 to 1 as we go from deep lake to plains
+    return { Mountains, transition };
+}
+
+
+float Chunk::calculateHeight(float x, float z) {
+
     // Calculate heights for each biome
-    float plainsHeight = calculatePlains(world_x, world_z);
-    float hillsHeight = calculateHills(world_x, world_z);
-    float mountainsHeight = calculateMountains(world_x, world_z);
+    float plainsHeight = calculatePlains(x, z);
+    float hillsHeight = calculateHills(x, z);
+    float mountainsHeight = calculateMountains(x, z);
+    float lakesHeight = calculateLakes(x, z);
 
     float height = 0.0f;
-    if (t < plainsEnd) {
-        // Lerp between plains and hills
-        float localT = t / plainsEnd;
-        height = std::lerp(plainsHeight, hillsHeight, localT);
-    } else if (t < hillsEnd) {
-        // Lerp between hills and mountains
-        float localT = (t - plainsEnd) / (hillsEnd - plainsEnd);
-        height = std::lerp(hillsHeight, mountainsHeight, localT);
-    } else {
-        // Use mountains
-        height = mountainsHeight;
+    Chunk::sBiome biome = getBiomeType(x, z);
+
+    switch (biome.type) {
+    case Lake:
+        height = std::lerp(lakesHeight, plainsHeight, biome.transition);
+        break;
+    case Plains:
+        height = std::lerp(plainsHeight, hillsHeight, biome.transition);
+        break;
+    case Hills:
+        height = std::lerp(hillsHeight, mountainsHeight, biome.transition);
+        break;
+    case Mountains:
+        height = std::lerp(mountainsHeight, hillsHeight, biome.transition);
+        break;
+
     }
 
     return height;
-}
-
-float Chunk::calculateHeight(float x, float z) {
-    return calculateHeight(x, z, getPosition());
 }
 
 float Chunk::calculatePlains(float x, float z) {
@@ -237,6 +270,23 @@ float Chunk::calculateMountains(float x, float z) {
     float finalHeight = std::pow(std::max(0.0f, height), 3.0f);
     // Scale up for tall, smooth mountains
     return height * 10.0f; // 2.5f controls the max height of mountains
+}
+
+float Chunk::calculateLakes(float x, float z) {
+
+    // Use low-frequency noise for smoothness
+    float baseFreq = 0.05f; // Lower = smoother, broader hills
+    float noise0 = m_BaseTerrainNoiseGenerator.generateNoise2d(x * baseFreq, z * baseFreq);
+
+    // Optionally add a very subtle higher-frequency layer for gentle detail
+    float detailFreq = 0.1f;
+    float noise1 = m_SecondaryTerrainNoiseGenerator.generateNoise2d(x * detailFreq, z * detailFreq) * 0.2f;
+
+    // Combine and normalize
+    float height = (noise0 + noise1) / 1.2f; // Weighted sum
+
+    // Scale to desired amplitude (e.g., 0.0 to 1.0, then scale down for gentle hills)
+    return (height * 0.15f) - 3.0f; // 0.15f controls the max height of hills
 }
 
 bool Chunk::setPointHeight(float worldX, float worldZ, float newY) {
@@ -429,7 +479,6 @@ bool Chunk::setRegionHeight(float centerWorldX, float centerWorldZ, float radius
 
     return true;
 }
-
 
 void Chunk::onCollision(){
     //do nothing - we don't currently care about chunk collisions.

@@ -19,6 +19,17 @@ namespace client {
     protected:
 
     private:
+        typedef enum BiomeType {
+            Lake,
+            Plains,
+            Hills,
+            Mountains
+        } eBiomeType;
+
+        typedef struct {
+            BiomeType type;
+            float transition;
+        } sBiome;
 
         void createMesh();
 
@@ -27,11 +38,13 @@ namespace client {
         void createNormals(core::Mesh* mesh);
 
         float calculateHeight(float x, float z);
-        float calculateHeight(float x, float z, const glm::vec3& chunkPos);
 
         float calculatePlains(float x, float z);
         float calculateHills(float x, float z);
         float calculateMountains(float x, float z);
+        float calculateLakes(float x, float z);
+
+        sBiome getBiomeType(float x, float z);
 
         int m_vertexCountX = 16;
         int m_vertexCountZ = 16;
@@ -41,6 +54,7 @@ namespace client {
         math::Noise m_BiomeNoiseGenerator;
 
         uint64_t m_seed;
+        
         
     };
 }

@@ -76,6 +76,7 @@ void TerrainGenerator::createChunks(){
         }
     }
 }
+
 void TerrainGenerator::loadPendingChunks() {
 
     int loadedThisFrame = 0;
@@ -174,3 +175,13 @@ void TerrainGenerator::setRegionHeight(float centerWorldX, float centerWorldZ, f
     }
 }
 
+/**
+* TODO: rivers
+* what I'm currently thinking:
+*   - use a noise gen to determin rainfall,
+*   - then, simulate the rainfall paths downhill.
+*       - probably some sort of A*? would also need to determine the ending location
+*       - so probably need ocean nodes as well?
+*           - determine what level "sea level" is, and create ending nodes at any terrain that has this hight.
+*   - if the rainfall path is used by enough water, it becomes a river and carves out a riverbed.
+*/
