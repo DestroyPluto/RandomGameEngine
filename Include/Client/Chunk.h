@@ -15,7 +15,7 @@ namespace client {
 
             bool setPointHeight(float worldX, float worldZ, float newY);
             bool setRegionHeight(float centerWorldX, float centerWorldZ, float radius, float newY);
-
+            float getPointHeight(float worldX, float worldZ);
     protected:
 
     private:
@@ -46,15 +46,17 @@ namespace client {
 
         sBiome getBiomeType(float x, float z);
 
-        int m_vertexCountX = 16;
-        int m_vertexCountZ = 16;
+        int m_vertexCountX;
+        int m_vertexCountZ;
 
         math::Noise m_BaseTerrainNoiseGenerator;
         math::Noise m_SecondaryTerrainNoiseGenerator;
         math::Noise m_BiomeNoiseGenerator;
 
         uint64_t m_seed;
+
         
+        float* m_heightMap;
         
     };
 }

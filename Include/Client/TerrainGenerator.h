@@ -15,8 +15,7 @@ namespace client {
         }
 
        virtual ~TerrainGenerator() {
-          //  delete m_noiseGenerator0;
-           // delete m_noiseGenerator1;
+
        }
 
     public:
@@ -36,5 +35,6 @@ namespace client {
         
         std::queue<std::tuple<uint32_t, glm::vec3, uint64_t>> m_pendingChunks;
         int m_chunksPerFrame = 2; // Tune this for your performance
+
     };
 }

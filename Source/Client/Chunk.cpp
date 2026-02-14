@@ -19,6 +19,7 @@ Chunk::Chunk(uint32_t id, glm::vec3 pos, uint64_t seed) : Entity(id){
     m_BaseTerrainNoiseGenerator = Noise(m_seed);
     m_SecondaryTerrainNoiseGenerator = Noise(m_seed * 2);
     m_BiomeNoiseGenerator = Noise(m_seed * 3);
+
     createMesh();
 }
 
@@ -38,6 +39,23 @@ void Chunk::createMesh() {
     setMesh(terrainMesh);
 }
 
+float Chunk::getPointHeight(float worldX, float worldZ) {
+    // Map world coordinates to chunk coordinates
+    glm::vec3 chunkPos = getPosition();
+    float localX = worldX - chunkPos.x;
+    float localZ = worldZ - chunkPos.z;
+
+    // Calculate the grid cell coordinates
+    int gridX = static_cast<int>((localX / CHUNK_SIZE) * m_vertexCountX);
+    int gridZ = static_cast<int>((localZ / CHUNK_SIZE) * m_vertexCountZ);
+
+    // Clamp to valid range
+    gridX = std::clamp(gridX, 0, m_vertexCountX - 1);
+    gridZ = std::clamp(gridZ, 0, m_vertexCountZ - 1);
+
+    return m_heightMap[gridX * m_vertexCountX + gridZ];
+}
+
 void Chunk::createPoints(core::Mesh* mesh) {
     // Choose how many samples (vertices) per unit length.
     const int samplesPerUnit = 2;
@@ -49,6 +67,9 @@ void Chunk::createPoints(core::Mesh* mesh) {
     float lengthSpacing = CHUNK_SIZE / static_cast<float>(m_vertexCountZ - 1);
     const float halfWidth = CHUNK_SIZE * 0.5f;
     const float halfLength = CHUNK_SIZE * 0.5f;
+
+    //has to be allocated after vertex counts are determined
+    m_heightMap = new float[m_vertexCountX * m_vertexCountZ];
 
     // Precompute world position to avoid repeated getPosition() calls
     glm::vec3 chunkPos = getPosition();
@@ -64,6 +85,7 @@ void Chunk::createPoints(core::Mesh* mesh) {
             float world_z = chunkPos.z + z;
 
             float y = calculateHeight(world_x, world_z);
+            m_heightMap[ix * m_vertexCountX + iz] = y; // Store height in heightmap for potential future use
             points.push_back(Point(x, y, z));
             sBiome biome = getBiomeType(world_x, world_z);
             if (biome.type == Lake) {
