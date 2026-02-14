@@ -13,6 +13,7 @@ void TerrainGenerator::initialize(){
     
     m_parent->setMesh(nullptr);
     createChunks();
+    m_riverGenerator = new RiverGenerator(this);
 
 }
 
@@ -22,7 +23,7 @@ uint32_t TerrainGenerator::generateChunkId(float x, float y) {
     uint16_t x_int = static_cast<uint16_t>(x);
     uint16_t y_int = static_cast<uint16_t>(y);
 
-    const uint32_t chunkIdOffset = 300; // Arbitrary offset to avoid low IDs reserved for other entities
+    const uint32_t chunkIdOffset = 10000; // Arbitrary offset to avoid low IDs reserved for other entities
     uint32_t id = chunkIdOffset + (x_int << 16 | y_int);
 
     return id;
@@ -87,6 +88,9 @@ void TerrainGenerator::loadPendingChunks() {
         Chunk* newChunk = new Chunk(chunkId, chunkPos, seed);
         m_parent->addChild(newChunk);
         m_loadedChunks.push_back(newChunk);
+        if (m_riverGenerator) {
+            m_riverGenerator->addNodesForChunk(newChunk);
+        }
         loadedThisFrame++;
     }
 }
@@ -124,6 +128,9 @@ void TerrainGenerator::update(){
             }
         }
     }
+
+    m_riverGenerator->updateRivers();
+
 }
 
 float TerrainGenerator::getDistanceBetweenTwoPoints2D(glm::vec2 pos1, glm::vec2 pos2){
@@ -134,9 +141,18 @@ float TerrainGenerator::getDistanceBetweenTwoPoints2D(glm::vec2 pos1, glm::vec2 
 
 Chunk* TerrainGenerator::getChunkAtWorldPosition(float worldX, float worldZ) {
     // Calculate which chunk contains this world position
-    // Chunks are centered at multiples of CHUNK_SIZE, so we use round to find the nearest chunk center
-    float chunkX = std::round(worldX / Chunk::CHUNK_SIZE) * Chunk::CHUNK_SIZE;
-    float chunkZ = std::round(worldZ / Chunk::CHUNK_SIZE) * Chunk::CHUNK_SIZE;
+    // Chunks are centered at multiples of CHUNK_SIZE (e.g., 0, 16, 32...)
+    // A chunk centered at position X covers from (X - CHUNK_SIZE/2) to (X + CHUNK_SIZE/2)
+    // To find which chunk contains a point, we need to find which multiple of CHUNK_SIZE is nearest
+    
+    // Add half chunk size, then floor-divide to get the chunk grid coordinate
+    float halfSize = Chunk::CHUNK_SIZE * 0.5f;
+    int chunkGridX = static_cast<int>(std::floor((worldX + halfSize) / Chunk::CHUNK_SIZE));
+    int chunkGridZ = static_cast<int>(std::floor((worldZ + halfSize) / Chunk::CHUNK_SIZE));
+    
+    // Convert grid coordinates back to world position (chunk center)
+    float chunkX = chunkGridX * Chunk::CHUNK_SIZE;
+    float chunkZ = chunkGridZ * Chunk::CHUNK_SIZE;
     
     uint32_t chunkId = generateChunkId(chunkX, chunkZ);
     

@@ -45,15 +45,55 @@ float Chunk::getPointHeight(float worldX, float worldZ) {
     float localX = worldX - chunkPos.x;
     float localZ = worldZ - chunkPos.z;
 
-    // Calculate the grid cell coordinates
-    int gridX = static_cast<int>((localX / CHUNK_SIZE) * m_vertexCountX);
-    int gridZ = static_cast<int>((localZ / CHUNK_SIZE) * m_vertexCountZ);
+    // Chunk mesh is centered, so local coordinates range from -halfWidth to +halfWidth
+    const float halfWidth = CHUNK_SIZE * 0.5f;
+    const float halfLength = CHUNK_SIZE * 0.5f;
+
+    // Check if the point is within chunk bounds (with small epsilon for floating point tolerance)
+    const float epsilon = 0.01f;
+    if (localX < -halfWidth - epsilon || localX > halfWidth + epsilon ||
+        localZ < -halfLength - epsilon || localZ > halfLength + epsilon) {
+        // Point is outside this chunk's bounds - shouldn't happen if caller is using correct chunk
+        // Return edge value as fallback
+        localX = std::clamp(localX, -halfWidth, halfWidth);
+        localZ = std::clamp(localZ, -halfLength, halfLength);
+    }
+
+    // Shift local coordinates to range from 0 to CHUNK_SIZE
+    float normalizedX = localX + halfWidth;
+    float normalizedZ = localZ + halfLength;
+
+    // Calculate the exact grid position (as a float)
+    // Use more precise calculation to avoid accumulation errors
+    float gridXf = (normalizedX * (m_vertexCountX - 1)) / (float)CHUNK_SIZE;
+    float gridZf = (normalizedZ * (m_vertexCountZ - 1)) / (float)CHUNK_SIZE;
 
     // Clamp to valid range
-    gridX = std::clamp(gridX, 0, m_vertexCountX - 1);
-    gridZ = std::clamp(gridZ, 0, m_vertexCountZ - 1);
+    gridXf = std::clamp(gridXf, 0.0f, (float)(m_vertexCountX - 1) - 0.001f);
+    gridZf = std::clamp(gridZf, 0.0f, (float)(m_vertexCountZ - 1) - 0.001f);
 
-    return m_heightMap[gridX * m_vertexCountX + gridZ];
+    // Get the four surrounding grid points for bilinear interpolation
+    int x0 = static_cast<int>(std::floor(gridXf));
+    int z0 = static_cast<int>(std::floor(gridZf));
+    int x1 = std::min(x0 + 1, m_vertexCountX - 1);
+    int z1 = std::min(z0 + 1, m_vertexCountZ - 1);
+
+    // Get fractional part for interpolation
+    float fx = gridXf - x0;
+    float fz = gridZf - z0;
+
+    // Get the four corner heights
+    float h00 = m_heightMap[x0 * m_vertexCountZ + z0];
+    float h10 = m_heightMap[x1 * m_vertexCountZ + z0];
+    float h01 = m_heightMap[x0 * m_vertexCountZ + z1];
+    float h11 = m_heightMap[x1 * m_vertexCountZ + z1];
+
+    // Bilinear interpolation
+    float h0 = h00 * (1.0f - fx) + h10 * fx;
+    float h1 = h01 * (1.0f - fx) + h11 * fx;
+    float height = h0 * (1.0f - fz) + h1 * fz;
+
+    return height;
 }
 
 void Chunk::createPoints(core::Mesh* mesh) {
@@ -85,7 +125,7 @@ void Chunk::createPoints(core::Mesh* mesh) {
             float world_z = chunkPos.z + z;
 
             float y = calculateHeight(world_x, world_z);
-            m_heightMap[ix * m_vertexCountX + iz] = y; // Store height in heightmap for potential future use
+            m_heightMap[ix * m_vertexCountZ + iz] = y; // Store height in heightmap (row-major: ix * numColumns + iz)
             points.push_back(Point(x, y, z));
             sBiome biome = getBiomeType(world_x, world_z);
             if (biome.type == Lake) {
