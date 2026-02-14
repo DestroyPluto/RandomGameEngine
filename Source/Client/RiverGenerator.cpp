@@ -2,237 +2,275 @@
 #include "Entity.h"
 #include "DebugEntity.h"
 #include "Core/HgLogger.h"
-#include <map> // For std::map usage
+#include "SceneManager.h"
+#include <map>
+#include <unordered_set>
 #include <iostream>
 
-//#define SHOW_DEBUG_NODES
-//#define SHOW_DEBUG_CONNECTIONS
+#define SHOW_DEBUG_NODES
+#define SHOW_DEBUG_CONNECTIONS
 
 using namespace client;
 using namespace core;
 
-RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator) {
-    m_terrainGenerator = terrainGenerator;
+// Node destructor - clean up all connections owned by this node
+Node::~Node() {
+    for (Connection* connection : m_connections) {
+        delete connection;
+    }
+    m_connections.clear();
+}
+
+RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator) 
+    : m_terrainGenerator(terrainGenerator) {
     createNodes();
     HgLogger::logMsg("[RiverGenerator] Number of nodes created: %zu", m_nodes.size());
 
+#if defined(SHOW_DEBUG_NODES) || defined(SHOW_DEBUG_CONNECTIONS)
+    // Get player position once for all debug rendering
+    glm::vec2 playerPos = getPlayerPosition2D();
+#endif
+
 #ifdef SHOW_DEBUG_NODES
-    //display the nodes as debug entities at actual terrain height
+    // Create debug entities for all nodes, but only render those within radius
     for (Node* node : m_nodes) {
-        uint16_t x_int = static_cast<uint16_t>(node->m_position.x);
-        uint16_t y_int = static_cast<uint16_t>(node->m_position.y);
+        const glm::vec2& nodePos = node->getPosition();
+        
+        uint16_t xInt = static_cast<uint16_t>(nodePos.x);
+        uint16_t yInt = static_cast<uint16_t>(nodePos.y);
 
-        const uint32_t chunkIdOffset = 200; // Arbitrary offset to avoid low IDs reserved for other entities
-        uint32_t id = chunkIdOffset + (x_int << 16 | y_int);
+        uint32_t id = CHUNK_ID_OFFSET + (xInt << 16 | yInt);
 
-        float wx = node->m_position.x;
-        float wz = node->m_position.y;
+        float worldX = nodePos.x;
+        float worldZ = nodePos.y;
         
         // Get actual terrain height for debug visualization
-        Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(wx, wz);
-        float terrainY = 1.0f; // Default fallback
+        Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(worldX, worldZ);
+        float terrainY = DEFAULT_DEBUG_HEIGHT;
         if (nodeChunk) {
-            terrainY = nodeChunk->getPointHeight(wx, wz);
+            terrainY = nodeChunk->getPointHeight(worldX, worldZ);
+        } else {
+            HgLogger::logMsg("[RiverGenerator] Warning: No chunk found for node at (%.2f, %.2f)", worldX, worldZ);
         }
         
-        glm::vec3 debugPos(wx, terrainY, wz);
+        glm::vec3 debugPos(worldX, terrainY, worldZ);
 
         DebugEntity* debugEntity = new DebugEntity(id, debug_Box, debugPos);
-        debugEntity->setScale(glm::vec3(0.25f)); // Scale down the debug box for better visibility
-        debugEntity->setRenderMesh(true);
+        debugEntity->setScale(glm::vec3(NODE_DEBUG_SCALE));
+        
+        // Set visibility based on distance from player
+        bool shouldRender = isWithinDebugRadius(nodePos, playerPos);
+        debugEntity->setRenderMesh(shouldRender);
+        
         m_terrainGenerator->m_parent->addChild(debugEntity);
     }
-
 #endif // SHOW_DEBUG_NODES
 
 #ifdef SHOW_DEBUG_CONNECTIONS
-
-    // Display a debug cube for each connection between nodes
-    uint32_t connIdOffset = 1000000; // Large offset to avoid overlap with node IDs
-    uint32_t connCounter = 0;
-    for (Node* node : m_nodes) { 
-        for (const Connection* con : node->getConnections()) {
-            // Only draw for one direction to avoid duplicate cubes
-            if (con->startNode < con->endNode) {
-                glm::vec2 mid2d = (con->startNode->m_position + con->endNode->m_position) * 0.5f;
-                glm::vec3 mid(mid2d.x, 1.1f, mid2d.y); // Slightly above ground
+// Create debug entities for all connections, but only render those within radius
+uint32_t connCounter = 0;
+for (Node* node : m_nodes) {
+    const glm::vec2& nodePos = node->getPosition();
+    
+    // Get terrain height at this node's position
+    Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(nodePos.x, nodePos.y);
+    float nodeTerrainHeight = DEFAULT_DEBUG_HEIGHT;
+    if (nodeChunk) {
+        nodeTerrainHeight = nodeChunk->getPointHeight(nodePos.x, nodePos.y);
+    }
+    
+    for (const Connection* conn : node->getConnections()) {
+        // Only draw for one direction to avoid duplicate cubes (connections are directional)
+        if (node < conn->targetNode) {
+            const glm::vec2& startPos = node->getPosition();
+            const glm::vec2& endPos = conn->targetNode->getPosition();
+            glm::vec2 debugPos2D = startPos + (endPos - startPos) * 0.25f; // 25% from start node
+            glm::vec3 debugPos3D(debugPos2D.x, nodeTerrainHeight, debugPos2D.y);
                 
-                uint32_t connId = connIdOffset + connCounter++;
+                uint32_t connId = CONNECTION_ID_OFFSET + connCounter++;
                 
-                DebugEntity* debugConn = new DebugEntity(connId, debug_Box, mid);
+                DebugEntity* debugConn = new DebugEntity(connId, debug_Box, debugPos3D);
+                debugConn->setScale(glm::vec3(CONNECTION_DEBUG_SCALE));
                 
-                debugConn->setScale(glm::vec3(0.10f)); // Smaller than node cubes
-                debugConn->setRenderMesh(true);
+                // Set visibility based on distance from player
+                bool shouldRender = isWithinDebugRadius(nodePos, playerPos);
+                debugConn->setRenderMesh(shouldRender);
                 
                 m_terrainGenerator->m_parent->addChild(debugConn);
             }
         }
     }
-
 #endif // SHOW_DEBUG_CONNECTIONS
-
 }
 
 RiverGenerator::~RiverGenerator() {
+    cleanupNodes();
 }
 
 void RiverGenerator::updateRivers() {
-    //atm do nothing, 
-    //but eventually this will be responsible for generating river paths and modifying the terrain accordingly.
+    // Currently empty
+    // Eventually this will be responsible for generating river paths and modifying the terrain accordingly.
+}
 
+void RiverGenerator::updateDebugEntityVisibility() {
+#if defined(SHOW_DEBUG_NODES) || defined(SHOW_DEBUG_CONNECTIONS)
+    glm::vec2 playerPos = getPlayerPosition2D();
+    
+    #ifdef SHOW_DEBUG_NODES
+    // Update visibility for all node debug entities
+    for (auto& [gridKey, debugEntity] : m_nodeDebugEntities) {
+        Node* node = m_grid[gridKey];
+        const glm::vec2& nodePos = node->getPosition();
+        bool shouldRender = isWithinDebugRadius(nodePos, playerPos);
+        debugEntity->setRenderMesh(shouldRender);
+    }
+    #endif
+    
+    #ifdef SHOW_DEBUG_CONNECTIONS
+    // Update visibility for all connection debug entities
+    for (auto& [connKey, debugEntity] : m_connectionDebugEntities) {
+        const GridKey& startGridKey = connKey.first;
+        Node* startNode = m_grid[startGridKey];
+        const glm::vec2& nodePos = startNode->getPosition();
+        bool shouldRender = isWithinDebugRadius(nodePos, playerPos);
+        debugEntity->setRenderMesh(shouldRender);
+    }
+    #endif
+#endif
 }
 
 void RiverGenerator::createNodes() {
-float nodeSpacing = 1.0f;
-m_nodes.clear();
-m_grid.clear();
+    m_nodes.clear();
+    m_grid.clear();
 
-HgLogger::logMsg("[RiverGenerator] Number of loaded chunks: %zu", m_terrainGenerator->m_loadedChunks.size());
-// 1. Create nodes for all loaded chunks
-for (Chunk* chunk : m_terrainGenerator->m_loadedChunks) {
-    glm::vec3 chunkPos = chunk->getPosition();
-    HgLogger::logMsg("[RiverGenerator] Chunk at position: (%.2f, %.2f, %.2f)", chunkPos.x, chunkPos.y, chunkPos.z);
-    int chunkSize = Chunk::CHUNK_SIZE;
-    // Chunk mesh is centered, so calculate the corner position
-    float baseX = chunkPos.x - chunkSize / 2.0f;
-    float baseY = chunkPos.z - chunkSize / 2.0f;
-    for (int ix = 0; ix < chunkSize; ++ix) {
-        for (int iy = 0; iy < chunkSize; ++iy) {
-            // Calculate grid key first to avoid floating point precision issues
-            int gridKeyX = static_cast<int>(std::round(baseX)) + ix;
-            int gridKeyY = static_cast<int>(std::round(baseY)) + iy;
-            // Derive exact position from grid key for consistency
-            float gx = static_cast<float>(gridKeyX);
-            float gy = static_cast<float>(gridKeyY);
-            glm::vec2 pos(gx, gy);
-            Node* node = new Node(pos);
-            m_nodes.push_back(node);
-            m_grid[{gridKeyX, gridKeyY}] = node;
+    HgLogger::logMsg("[RiverGenerator] Number of loaded chunks: %zu", m_terrainGenerator->m_loadedChunks.size());
+    
+    // 1. Create nodes for all loaded chunks
+    for (Chunk* chunk : m_terrainGenerator->m_loadedChunks) {
+        glm::vec3 chunkPos = chunk->getPosition();
+        HgLogger::logMsg("[RiverGenerator] Chunk at position: (%.2f, %.2f, %.2f)", chunkPos.x, chunkPos.y, chunkPos.z);
+        
+        int chunkSize = Chunk::CHUNK_SIZE;
+        // Chunk mesh is centered, so calculate the corner position
+        float baseX = chunkPos.x - chunkSize / 2.0f;
+        float baseZ = chunkPos.z - chunkSize / 2.0f;
+        
+        for (int offsetX = 0; offsetX < chunkSize; ++offsetX) {
+            for (int offsetZ = 0; offsetZ < chunkSize; ++offsetZ) {
+                // Calculate grid key first to avoid floating point precision issues
+                GridKey gridKey = calculateGridKey(baseX, baseZ, offsetX, offsetZ);
+                
+                // Derive exact position from grid key for consistency
+                float gridX = static_cast<float>(gridKey.first);
+                float gridZ = static_cast<float>(gridKey.second);
+                glm::vec2 nodePosition(gridX, gridZ);
+                
+                Node* node = new Node(nodePosition);
+                m_nodes.push_back(node);
+                m_grid[gridKey] = node;
             }
         }
     }
 
     // 2. Connect each node to its 8 neighbors (across chunk boundaries)
-    const int dx[8] = {-1, -1,  0, 1, 1,  1,  0, -1};
-    const int dy[8] = { 0,  1,  1, 1, 0, -1, -1, -1};
-    for (auto& entry : m_grid) {
-        Node* node = entry.second;
-        int gridKeyX = entry.first.first;
-        int gridKeyY = entry.first.second;
-        for (int dir = 0; dir < 8; ++dir) {
-            int nx = gridKeyX + dx[dir];
-            int ny = gridKeyY + dy[dir];
-            auto it = m_grid.find({nx, ny});
-            if (it != m_grid.end()) {
-                Node* neighbor = it->second;
-                float weight = glm::distance(node->m_position, neighbor->m_position);
-                Connection* conn = new Connection{node, neighbor, weight};
-                node->addConnection(conn);
-            }
-        }
+    for (auto& [gridKey, node] : m_grid) {
+        connectNodeToNeighbors(node, gridKey);
     }
 }
 
 void RiverGenerator::addNodesForChunk(Chunk* chunk) {
-float nodeSpacing = 1.0f;
-int chunkSize = Chunk::CHUNK_SIZE;
-glm::vec3 chunkPos = chunk->getPosition();
-// Chunk mesh is centered, so calculate the corner position
-float baseX = chunkPos.x - chunkSize / 2.0f;
-float baseY = chunkPos.z - chunkSize / 2.0f;
+    int chunkSize = Chunk::CHUNK_SIZE;
+    glm::vec3 chunkPos = chunk->getPosition();
+    
+    // Chunk mesh is centered, so calculate the corner position
+    float baseX = chunkPos.x - chunkSize / 2.0f;
+    float baseZ = chunkPos.z - chunkSize / 2.0f;
 
-    if (m_nodes.empty()) m_grid.clear();
-    uint32_t id = 0x11000011;
+    if (m_nodes.empty()) {
+        m_grid.clear();
+    }
+    
     // 1. Create nodes for this chunk
-    for (int ix = 0; ix < chunkSize; ++ix) {
-        for (int iy = 0; iy < chunkSize; ++iy) {
+    for (int offsetX = 0; offsetX < chunkSize; ++offsetX) {
+        for (int offsetZ = 0; offsetZ < chunkSize; ++offsetZ) {
             // Calculate grid key first from chunk position to avoid floating point precision issues
-            int gridKeyX = static_cast<int>(std::round(baseX)) + ix;
-            int gridKeyY = static_cast<int>(std::round(baseY)) + iy;
-            // Then derive the exact position from the grid key to ensure consistency
-            float gx = static_cast<float>(gridKeyX);
-            float gy = static_cast<float>(gridKeyY);
-            glm::vec2 pos(gx, gy);
-            if (m_grid.find({gridKeyX, gridKeyY}) == m_grid.end()) {
-                Node* node = new Node(pos);
+            GridKey gridKey = calculateGridKey(baseX, baseZ, offsetX, offsetZ);
+            
+            // Only create node if it doesn't already exist
+            if (m_grid.find(gridKey) == m_grid.end()) {
+                // Derive the exact position from the grid key to ensure consistency
+                float gridX = static_cast<float>(gridKey.first);
+                float gridZ = static_cast<float>(gridKey.second);
+                glm::vec2 nodePosition(gridX, gridZ);
+                
+                Node* node = new Node(nodePosition);
                 m_nodes.push_back(node);
-                m_grid[{gridKeyX, gridKeyY}] = node;
+                m_grid[gridKey] = node;
+                
                 // Add debug entity for node
                 #ifdef SHOW_DEBUG_NODES
-                uint32_t id = 0x20000000u + ((uint32_t(gridKeyX) & 0xFFFFu) << 16) | (uint32_t(gridKeyY) & 0xFFFFu);
-                float wx = node->m_position.x;
-                float wz = node->m_position.y;
-                Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(wx, wz);
-                float terrainY = 1.0f;
+                uint32_t id = DYNAMIC_NODE_ID_BASE + ((uint32_t(gridKey.first) & 0xFFFFu) << 16) | (uint32_t(gridKey.second) & 0xFFFFu);
+                
+                float worldX = nodePosition.x;
+                float worldZ = nodePosition.y;
+                Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(worldX, worldZ);
+                float terrainY = DEFAULT_DEBUG_HEIGHT;
                 if (nodeChunk) {
-                    terrainY = nodeChunk->getPointHeight(wx, wz);
+                    terrainY = nodeChunk->getPointHeight(worldX, worldZ);
+                } else {
+                    HgLogger::logMsg("[RiverGenerator] Warning: No chunk found for node at (%.2f, %.2f)", worldX, worldZ);
                 }
-                glm::vec3 debugPos(wx, terrainY, wz);
+                
+                glm::vec3 debugPos(worldX, terrainY, worldZ);
                 DebugEntity* debugEntity = new DebugEntity(id, debug_Box, debugPos);
-                debugEntity->setScale(glm::vec3(0.25f));
-                debugEntity->setRenderMesh(true);
+                debugEntity->setScale(glm::vec3(NODE_DEBUG_SCALE));
+                
+                // Set visibility based on distance from player
+                glm::vec2 playerPos = getPlayerPosition2D();
+                bool shouldRender = isWithinDebugRadius(nodePosition, playerPos);
+                debugEntity->setRenderMesh(shouldRender);
+                
                 m_terrainGenerator->m_parent->addChild(debugEntity);
-                m_nodeDebugEntities[{gridKeyX, gridKeyY}] = debugEntity;
+                m_nodeDebugEntities[gridKey] = debugEntity;
                 #endif
             }
         }
     }
 
     // 2. Connect each new node to its 8 neighbors (across chunk boundaries)
-    const int dx[8] = {-1, -1,  0, 1, 1,  1,  0, -1};
-    const int dy[8] = { 0,  1,  1, 1, 0, -1, -1, -1};
-    for (int ix = 0; ix < chunkSize; ++ix) {
-        for (int iy = 0; iy < chunkSize; ++iy) {
+    for (int offsetX = 0; offsetX < chunkSize; ++offsetX) {
+        for (int offsetZ = 0; offsetZ < chunkSize; ++offsetZ) {
             // Use same calculation as above to ensure consistency
-            int gridKeyX = static_cast<int>(std::round(baseX)) + ix;
-            int gridKeyY = static_cast<int>(std::round(baseY)) + iy;
-            Node* node = m_grid[{gridKeyX, gridKeyY}];
-            for (int dir = 0; dir < 8; ++dir) {
-                int nx = gridKeyX + dx[dir];
-                int ny = gridKeyY + dy[dir];
-                auto it = m_grid.find({nx, ny});
-                if (it != m_grid.end()) {
-                    Node* neighbor = it->second;
-                    float weight = glm::distance(node->m_position, neighbor->m_position);
-                    Connection* conn = new Connection{node, neighbor, weight};
-                    node->addConnection(conn);
-                    // Add debug entity for connection (only one direction)
-                    #ifdef SHOW_DEBUG_CONNECTIONS
-                    if (gridKeyX < nx || (gridKeyX == nx && gridKeyY < ny)) {
-                        uint32_t connId = 1000000 + (static_cast<uint16_t>(gridKeyX) << 16 | static_cast<uint16_t>(gridKeyY));
-                        glm::vec2 mid2d = (node->m_position + neighbor->m_position) * 0.5f;
-                        glm::vec3 mid(mid2d.x, 1.1f, mid2d.y);
-                        DebugEntity* debugConn = new DebugEntity(connId, debug_Box, mid);
-                        debugConn->setScale(glm::vec3(0.10f));
-                        debugConn->setRenderMesh(true);
-                        m_terrainGenerator->m_parent->addChild(debugConn);
-                        m_connectionDebugEntities[{{gridKeyX, gridKeyY}, {nx, ny}}] = debugConn;
-                    }
-                    #endif
-                }
-            }
+            GridKey gridKey = calculateGridKey(baseX, baseZ, offsetX, offsetZ);
+            Node* node = m_grid[gridKey];
+            
+            connectNodeToNeighbors(node, gridKey);
         }
     }
 }
 
 void RiverGenerator::removeNodesForChunk(Chunk* chunk) {
-int chunkSize = Chunk::CHUNK_SIZE;
-glm::vec3 chunkPos = chunk->getPosition();
-// Chunk mesh is centered, so calculate the corner position
-float baseX = chunkPos.x - chunkSize / 2.0f;
-float baseY = chunkPos.z - chunkSize / 2.0f;
+    int chunkSize = Chunk::CHUNK_SIZE;
+    glm::vec3 chunkPos = chunk->getPosition();
+    
+    // Chunk mesh is centered, so calculate the corner position
+    float baseX = chunkPos.x - chunkSize / 2.0f;
+    float baseZ = chunkPos.z - chunkSize / 2.0f;
 
     // Collect nodes to remove
     std::vector<Node*> nodesToRemove;
-    for (int ix = 0; ix < chunkSize; ++ix) {
-        for (int iy = 0; iy < chunkSize; ++iy) {
+    std::unordered_set<Node*> nodesToRemoveSet; // For O(1) lookup
+    
+    for (int offsetX = 0; offsetX < chunkSize; ++offsetX) {
+        for (int offsetZ = 0; offsetZ < chunkSize; ++offsetZ) {
             // Use same calculation as addNodesForChunk to ensure consistency
-            int gridKeyX = static_cast<int>(std::round(baseX)) + ix;
-            int gridKeyY = static_cast<int>(std::round(baseY)) + iy;
-            auto it = m_grid.find({gridKeyX, gridKeyY});
+            GridKey gridKey = calculateGridKey(baseX, baseZ, offsetX, offsetZ);
+            
+            auto it = m_grid.find(gridKey);
             if (it != m_grid.end()) {
                 Node* node = it->second;
                 nodesToRemove.push_back(node);
+                nodesToRemoveSet.insert(node);
                 m_grid.erase(it);
             }
         }
@@ -240,50 +278,204 @@ float baseY = chunkPos.z - chunkSize / 2.0f;
 
     // Remove connections to/from these nodes in all remaining nodes
     for (Node* node : m_nodes) {
-        auto& conns = node->m_connections;
-        conns.erase(std::remove_if(conns.begin(), conns.end(), [&](Connection* c) {
-            return std::find(nodesToRemove.begin(), nodesToRemove.end(), c->startNode) != nodesToRemove.end() ||
-                std::find(nodesToRemove.begin(), nodesToRemove.end(), c->endNode) != nodesToRemove.end();
-            }), conns.end());
+        if (nodesToRemoveSet.find(node) != nodesToRemoveSet.end()) {
+            continue; // Skip nodes that are being removed
+        }
+        
+        auto& connections = node->getConnections();
+        connections.erase(
+            std::remove_if(connections.begin(), connections.end(), [&](Connection* conn) {
+                // Check if target node is being removed
+                bool shouldRemove = nodesToRemoveSet.find(conn->targetNode) != nodesToRemoveSet.end();
+                if (shouldRemove) {
+                    delete conn; // Clean up the connection
+                }
+                return shouldRemove;
+            }),
+            connections.end()
+        );
     }
 
     // Remove from m_nodes and delete
-    m_nodes.erase(std::remove_if(m_nodes.begin(), m_nodes.end(), [&](Node* n) {
-        return std::find(nodesToRemove.begin(), nodesToRemove.end(), n) != nodesToRemove.end();
-        }), m_nodes.end());
-    for (Node* n : nodesToRemove) {
-        delete n;
+    m_nodes.erase(
+        std::remove_if(m_nodes.begin(), m_nodes.end(), [&](Node* node) {
+            return nodesToRemoveSet.find(node) != nodesToRemoveSet.end();
+        }),
+        m_nodes.end()
+    );
+    
+    // Delete nodes and their connections
+    for (Node* node : nodesToRemove) {
+        delete node;
     }
+    
     // Remove debug entities for nodes
-    for (Node* n : nodesToRemove) {
-        int gx = static_cast<int>(n->m_position.x);
-        int gy = static_cast<int>(n->m_position.y);
-        auto it = m_nodeDebugEntities.find({gx, gy});
+    for (Node* node : nodesToRemove) {
+        const glm::vec2& nodePos = node->getPosition();
+        int gridX = static_cast<int>(nodePos.x);
+        int gridZ = static_cast<int>(nodePos.y);
+        GridKey gridKey = {gridX, gridZ};
+        
+        auto it = m_nodeDebugEntities.find(gridKey);
         if (it != m_nodeDebugEntities.end()) {
-            it->second->markForDestruction(); // Properly cleanup render commands
+            it->second->markForDestruction();
             m_nodeDebugEntities.erase(it);
         }
     }
+    
     // Remove debug entities for connections
-    for (Node* n : nodesToRemove) {
-        int gx = static_cast<int>(n->m_position.x);
-        int gy = static_cast<int>(n->m_position.y);
-        const int dx[8] = {-1, -1,  0, 1, 1,  1,  0, -1};
-        const int dy[8] = { 0,  1,  1, 1, 0, -1, -1, -1};
-        for (int dir = 0; dir < 8; ++dir) {
-            int nx = gx + dx[dir];
-            int ny = gy + dy[dir];
-            auto connIt = m_connectionDebugEntities.find({{gx, gy}, {nx, ny}});
+    for (Node* node : nodesToRemove) {
+        const glm::vec2& nodePos = node->getPosition();
+        int gridX = static_cast<int>(nodePos.x);
+        int gridZ = static_cast<int>(nodePos.y);
+        
+        for (int dir = 0; dir < NEIGHBOR_COUNT; ++dir) {
+            int neighborX = gridX + NEIGHBOR_OFFSETS_X[dir];
+            int neighborZ = gridZ + NEIGHBOR_OFFSETS_Y[dir];
+            
+            ConnectionKey connKey1 = {{gridX, gridZ}, {neighborX, neighborZ}};
+            auto connIt = m_connectionDebugEntities.find(connKey1);
             if (connIt != m_connectionDebugEntities.end()) {
-                connIt->second->markForDestruction(); // Properly cleanup render commands
+                connIt->second->markForDestruction();
                 m_connectionDebugEntities.erase(connIt);
             }
+            
             // Also check the reverse direction to ensure both ends are cleaned up
-            connIt = m_connectionDebugEntities.find({{nx, ny}, {gx, gy}});
+            ConnectionKey connKey2 = {{neighborX, neighborZ}, {gridX, gridZ}};
+            connIt = m_connectionDebugEntities.find(connKey2);
             if (connIt != m_connectionDebugEntities.end()) {
-                connIt->second->markForDestruction(); // Properly cleanup render commands
+                connIt->second->markForDestruction();
                 m_connectionDebugEntities.erase(connIt);
             }
         }
     }
+}
+
+// ===== Helper Methods =====
+
+void RiverGenerator::cleanupNodes() {
+    // Delete all nodes (which will delete their connections via Node destructor)
+    for (Node* node : m_nodes) {
+        delete node;
+    }
+    m_nodes.clear();
+    m_grid.clear();
+    
+    // Clean up debug entities
+    for (auto& [key, entity] : m_nodeDebugEntities) {
+        entity->markForDestruction();
+    }
+    m_nodeDebugEntities.clear();
+    
+    for (auto& [key, entity] : m_connectionDebugEntities) {
+        entity->markForDestruction();
+    }
+    m_connectionDebugEntities.clear();
+}
+
+void RiverGenerator::cleanupConnectionsForNode(Node* node) {
+    for (Connection* connection : node->getConnections()) {
+        delete connection;
+    }
+    node->getConnections().clear();
+}
+
+GridKey RiverGenerator::calculateGridKey(float baseX, float baseZ, int offsetX, int offsetZ) const {
+    int gridKeyX = static_cast<int>(std::round(baseX)) + offsetX;
+    int gridKeyZ = static_cast<int>(std::round(baseZ)) + offsetZ;
+    return {gridKeyX, gridKeyZ};
+}
+
+float RiverGenerator::getTerrainHeight(const glm::vec2& worldPosition) const {
+    Chunk* chunk = m_terrainGenerator->getChunkAtWorldPosition(worldPosition.x, worldPosition.y);
+    
+    if (chunk) {
+        return chunk->getPointHeight(worldPosition.x, worldPosition.y);
+    }
+    
+    HgLogger::logMsg("[RiverGenerator] Warning: No chunk found at world position (%.2f, %.2f)", 
+                     worldPosition.x, worldPosition.y);
+    return DEFAULT_TERRAIN_HEIGHT;
+}
+
+void RiverGenerator::connectNodeToNeighbors(Node* node, const GridKey& gridKey) {
+    const glm::vec2& nodePosition = node->getPosition();
+    float nodeHeight = getTerrainHeight(nodePosition);
+    
+    // Check all 8 neighboring directions
+    for (int dir = 0; dir < NEIGHBOR_COUNT; ++dir) {
+        int neighborX = gridKey.first + NEIGHBOR_OFFSETS_X[dir];
+        int neighborZ = gridKey.second + NEIGHBOR_OFFSETS_Y[dir];
+        GridKey neighborKey = {neighborX, neighborZ};
+        
+        auto it = m_grid.find(neighborKey);
+        if (it != m_grid.end()) {
+            Node* neighbor = it->second;
+            const glm::vec2& neighborPosition = neighbor->getPosition();
+            float neighborHeight = getTerrainHeight(neighborPosition);
+            
+            // Only connect to neighbors that are downhill (rivers flow downward)
+            if (shouldConnectNodes(nodeHeight, neighborHeight)) {
+                float weight = calculateConnectionWeight(nodeHeight, neighborHeight);
+                Connection* connection = new Connection{neighbor, weight};
+                node->addConnection(connection);
+                
+                // Add debug entity for connection (only one direction to avoid duplicates)
+                #ifdef SHOW_DEBUG_CONNECTIONS
+                if (gridKey.first < neighborX || (gridKey.first == neighborX && gridKey.second < neighborZ)) {
+                    uint32_t connId = CONNECTION_ID_OFFSET + 
+                                     (static_cast<uint16_t>(gridKey.first) << 16 | 
+                                      static_cast<uint16_t>(gridKey.second));
+                    
+                    glm::vec2 debugPos2D = nodePosition + (neighborPosition - nodePosition) * 0.25f; // 25% from start node
+                    glm::vec3 debugPos3D(debugPos2D.x, nodeHeight, debugPos2D.y);
+                    
+                    DebugEntity* debugConn = new DebugEntity(connId, debug_Box, debugPos3D);
+                    debugConn->setScale(glm::vec3(CONNECTION_DEBUG_SCALE));
+                    
+                    // Set visibility based on distance from player
+                    glm::vec2 playerPos = getPlayerPosition2D();
+                    bool shouldRender = isWithinDebugRadius(nodePosition, playerPos);
+                    debugConn->setRenderMesh(shouldRender);
+                    
+                    m_terrainGenerator->m_parent->addChild(debugConn);
+                    
+                    ConnectionKey connKey = {gridKey, neighborKey};
+                    m_connectionDebugEntities[connKey] = debugConn;
+                }
+                #endif
+            }
+        }
+    }
+}
+
+bool RiverGenerator::shouldConnectNodes(float nodeHeight, float neighborHeight) const {
+    // Rivers flow downhill, so only connect when neighbor is lower
+    return neighborHeight < nodeHeight;
+}
+
+float RiverGenerator::calculateConnectionWeight(float nodeHeight, float neighborHeight) const {
+    // Weight represents the height drop (steeper = higher weight)
+    return nodeHeight - neighborHeight;
+}
+
+glm::vec2 RiverGenerator::getPlayerPosition2D() const {
+    Entity* playerEntity = SceneManager::getInstance()->getPlayerEntity();
+    
+    if (playerEntity) {
+        const glm::vec3& playerPos3D = playerEntity->getPosition();
+        return glm::vec2(playerPos3D.x, playerPos3D.z);
+    }
+    
+    // Default to origin if player doesn't exist
+    return glm::vec2(0.0f, 0.0f);
+}
+
+bool RiverGenerator::isWithinDebugRadius(const glm::vec2& position, const glm::vec2& playerPos) const {
+    float dx = position.x - playerPos.x;
+    float dz = position.y - playerPos.y;
+    float distanceSquared = dx * dx + dz * dz;
+    float radiusSquared = DEBUG_RENDER_RADIUS * DEBUG_RENDER_RADIUS;
+    
+    return distanceSquared <= radiusSquared;
 }
