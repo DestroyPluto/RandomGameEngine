@@ -63,7 +63,7 @@ class Game{
             
             SceneManager::getInstance()->setEngine((RenderingPlugin*) m_engine.get());
             m_config->loadFromFile("config.cfg");
-            GameManager game = GameManager(m_config);
+            GameManager game = GameManager(m_config, (RenderingPlugin*) m_engine.get());
 
             //ensure engine is initialized before we start the game
             while(!m_engine->isInitialized()){
@@ -79,16 +79,14 @@ class Game{
                 GameTime::setDeltaTime(deltaTime);
                 lastTime = currentTime;
 
-                shouldEnd = keyboard->isKeyDown(Keyboard::KEY_ESCAPE) || game.shouldEnd();
+                shouldEnd = game.shouldEnd();
 
                 game.update();
 
-                Scene* currentScene = SceneManager::getInstance()->getCurrentScene();
-                if(currentScene)
-                    currentScene->update((RenderingPlugin*)m_engine.get());
 
             }
 
+            m_engine->requestClose();
             m_renderingThread.join();
             HgLogger::logMsg("closing!");
             m_engine->closePlugin();
@@ -98,9 +96,6 @@ class Game{
         std::shared_ptr<Config> m_config = std::make_shared<Config>();
         std::unique_ptr<RenderingEngine> m_engine = std::make_unique<RenderingEngine>(m_config);
         std::thread m_renderingThread;
-
-        uint32_t m_count = 0;
-
 };
 
 int main(int args, char** argv)

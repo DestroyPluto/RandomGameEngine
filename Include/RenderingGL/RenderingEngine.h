@@ -32,6 +32,7 @@ namespace rendering
 		virtual core::HgError closePlugin() override;
 		virtual core::HgError setCameraPos(glm::vec3 translation) override;
 		virtual glm::vec3 getCameraPos() override;
+		virtual void requestClose() override;
 		
 		std::function<void(int, int)> m_keyCallback;
 		std::function<void(double, double)> m_mouseCallback;

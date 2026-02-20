@@ -77,6 +77,7 @@ void TerrainGenerator::createChunks(){
         }
     }
 }
+
 void TerrainGenerator::loadPendingChunks() {
 
     int loadedThisFrame = 0;

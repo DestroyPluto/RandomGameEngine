@@ -49,6 +49,11 @@ class RenderingPlugin{
         virtual glm::vec3 getCameraPos() = 0;
 
         /**
+         * Request the rendering window to close, allowing the rendering thread to exit gracefully.
+         */
+        virtual void requestClose() = 0;
+
+        /**
          * get the config for the rendering plugin.
          */
         virtual	std::shared_ptr<Config> getConfig()  = 0;

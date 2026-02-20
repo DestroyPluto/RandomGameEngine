@@ -22,8 +22,7 @@ void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height
 }
 
 void processInput(GLFWwindow* window){
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    // ESC key is now handled by GameManager's state system
 }
 
 std::thread RenderingEngine::startPlugin(){
@@ -226,6 +225,12 @@ HgError RenderingEngine::setCameraPos(glm::vec3 position){
 
 glm::vec3 RenderingEngine::getCameraPos(){
     return m_camera->getPosition();
+}
+
+void RenderingEngine::requestClose() {
+    if (m_window) {
+        glfwSetWindowShouldClose(m_window, true);
+    }
 }
 
 void RenderingEngine::handleDirtyEnts(){
