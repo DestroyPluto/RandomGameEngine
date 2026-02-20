@@ -8,10 +8,13 @@ namespace client {
         debug_line
     } DebugEntityType;
 
+    #include <glm/vec3.hpp>
+
     class DebugEntity : public core::Entity {
     
     public:
-        DebugEntity(uint32_t id, DebugEntityType type, glm::vec3 position);
+        // Optional color parameter (RGB). Defaults to red.
+        DebugEntity(uint32_t id, DebugEntityType type, glm::vec3 position, glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f));
 
         virtual ~DebugEntity() {}
         virtual void onCollision() override {};

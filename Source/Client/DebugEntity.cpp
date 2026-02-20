@@ -7,7 +7,7 @@ using namespace client;
 using namespace math;
 using namespace core;
 
-DebugEntity::DebugEntity(uint32_t id, DebugEntityType type, glm::vec3 position) : core::Entity(id), m_type(type) {
+DebugEntity::DebugEntity(uint32_t id, DebugEntityType type, glm::vec3 position, glm::vec3 color) : core::Entity(id), m_type(type) {
     
     setPosition(position);
 
@@ -37,10 +37,10 @@ DebugEntity::DebugEntity(uint32_t id, DebugEntityType type, glm::vec3 position) 
             0, 1, 5, 5, 4, 0  // bottom face
         };
 
-        // Set all vertex colours to red
+        // Set all vertex colours to the provided color
         math::PointArray colours;
         for (int i = 0; i < 8; ++i) {
-            colours.push_back(math::Point(1.0, 0.0, 0.0)); // RGB red
+            colours.push_back(math::Point(color.r, color.g, color.b));
         }
 
         Mesh* debugMesh = new Mesh();

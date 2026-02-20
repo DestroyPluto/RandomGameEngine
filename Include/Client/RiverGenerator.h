@@ -72,6 +72,7 @@ namespace client {
         void addNodesForChunk(Chunk* chunk);
         void removeNodesForChunk(Chunk* chunk);
         void updateDebugEntityVisibility(); // Update visibility of debug entities based on player position
+        void initializeDebugEntities(); // Create debug entities for all existing nodes
 
     private:
         // Constants for debug visualization
@@ -102,6 +103,8 @@ namespace client {
         // Debug visualization tracking
         std::map<GridKey, DebugEntity*> m_nodeDebugEntities;
         std::map<ConnectionKey, DebugEntity*> m_connectionDebugEntities;
+        // Monotonic id generator for debug entities to ensure uniqueness
+        uint32_t m_nextDebugId;
         
         // Node creation and management
         void createNodes();

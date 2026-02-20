@@ -7,8 +7,8 @@
 #include <unordered_set>
 #include <iostream>
 
-#define SHOW_DEBUG_NODES
-#define SHOW_DEBUG_CONNECTIONS
+//#define SHOW_DEBUG_NODES
+//#define SHOW_DEBUG_CONNECTIONS
 
 using namespace client;
 using namespace core;
@@ -22,10 +22,13 @@ Node::~Node() {
 }
 
 RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator) 
-    : m_terrainGenerator(terrainGenerator) {
-    createNodes();
-    HgLogger::logMsg("[RiverGenerator] Number of nodes created: %zu", m_nodes.size());
+    : m_terrainGenerator(terrainGenerator), m_nextDebugId(1000000u) {
+    // Note: Nodes are created incrementally via addNodesForChunk() as chunks load
+    // Don't call createNodes() here because chunks haven't been loaded yet
+    HgLogger::logMsg("[RiverGenerator] Initialized - nodes will be created as chunks load");
+}
 
+void RiverGenerator::initializeDebugEntities() {
 #if defined(SHOW_DEBUG_NODES) || defined(SHOW_DEBUG_CONNECTIONS)
     // Get player position once for all debug rendering
     glm::vec2 playerPos = getPlayerPosition2D();
@@ -39,12 +42,13 @@ RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator)
         uint16_t xInt = static_cast<uint16_t>(nodePos.x);
         uint16_t yInt = static_cast<uint16_t>(nodePos.y);
 
-        uint32_t id = CHUNK_ID_OFFSET + (xInt << 16 | yInt);
+        // Use monotonic debug id to avoid collisions from rounding
+        uint32_t id = m_nextDebugId++;
 
         float worldX = nodePos.x;
         float worldZ = nodePos.y;
         
-        // Get actual terrain height for debug visualization
+        // Get actual terrain height for debug visualization and raise node slightly above ground
         Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(worldX, worldZ);
         float terrainY = DEFAULT_DEBUG_HEIGHT;
         if (nodeChunk) {
@@ -52,10 +56,15 @@ RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator)
         } else {
             HgLogger::logMsg("[RiverGenerator] Warning: No chunk found for node at (%.2f, %.2f)", worldX, worldZ);
         }
-        
-        glm::vec3 debugPos(worldX, terrainY, worldZ);
 
-        DebugEntity* debugEntity = new DebugEntity(id, debug_Box, debugPos);
+        // Raise debug node slightly above terrain to avoid z-fighting
+        const float NODE_DEBUG_ELEVATION = 0.05f;
+        glm::vec3 debugPos(worldX, terrainY + NODE_DEBUG_ELEVATION, worldZ);
+
+        // Brighter red for node debug entities (normalized RGB)
+        glm::vec3 nodeDebugColor(1.0f, 0.2f, 0.2f);
+
+        DebugEntity* debugEntity = new DebugEntity(id, debug_Box, debugPos, nodeDebugColor);
         debugEntity->setScale(glm::vec3(NODE_DEBUG_SCALE));
         
         // Set visibility based on distance from player
@@ -63,6 +72,10 @@ RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator)
         debugEntity->setRenderMesh(shouldRender);
         
         m_terrainGenerator->m_parent->addChild(debugEntity);
+        
+        // Store in tracking map to prevent memory leak
+        GridKey gridKey = {static_cast<int>(nodePos.x), static_cast<int>(nodePos.y)};
+        m_nodeDebugEntities[gridKey] = debugEntity;
     }
 #endif // SHOW_DEBUG_NODES
 
@@ -71,6 +84,7 @@ RiverGenerator::RiverGenerator(TerrainGenerator* terrainGenerator)
 uint32_t connCounter = 0;
 for (Node* node : m_nodes) {
     const glm::vec2& nodePos = node->getPosition();
+    GridKey nodeGridKey = {static_cast<int>(nodePos.x), static_cast<int>(nodePos.y)};
     
     // Get terrain height at this node's position
     Chunk* nodeChunk = m_terrainGenerator->getChunkAtWorldPosition(nodePos.x, nodePos.y);
@@ -84,12 +98,16 @@ for (Node* node : m_nodes) {
         if (node < conn->targetNode) {
             const glm::vec2& startPos = node->getPosition();
             const glm::vec2& endPos = conn->targetNode->getPosition();
-            glm::vec2 debugPos2D = startPos + (endPos - startPos) * 0.25f; // 25% from start node
+            GridKey targetGridKey = {static_cast<int>(endPos.x), static_cast<int>(endPos.y)};
+            
+            glm::vec2 debugPos2D = startPos + (endPos - StartPos) * 0.25f; // 25% from start node
             glm::vec3 debugPos3D(debugPos2D.x, nodeTerrainHeight, debugPos2D.y);
                 
-                uint32_t connId = CONNECTION_ID_OFFSET + connCounter++;
+                uint32_t connId = m_nextDebugId++;
                 
-                DebugEntity* debugConn = new DebugEntity(connId, debug_Box, debugPos3D);
+                // Yellow for connection debug entities
+                glm::vec3 connDebugColor(10.0f, 10.0f, 0.0f);
+                DebugEntity* debugConn = new DebugEntity(connId, debug_Box, debugPos3D, connDebugColor);
                 debugConn->setScale(glm::vec3(CONNECTION_DEBUG_SCALE));
                 
                 // Set visibility based on distance from player
@@ -97,6 +115,10 @@ for (Node* node : m_nodes) {
                 debugConn->setRenderMesh(shouldRender);
                 
                 m_terrainGenerator->m_parent->addChild(debugConn);
+                
+                // Store in tracking map to prevent memory leak
+                ConnectionKey connKey = {nodeGridKey, targetGridKey};
+                m_connectionDebugEntities[connKey] = debugConn;
             }
         }
     }
@@ -108,8 +130,10 @@ RiverGenerator::~RiverGenerator() {
 }
 
 void RiverGenerator::updateRivers() {
-    // Currently empty
-    // Eventually this will be responsible for generating river paths and modifying the terrain accordingly.
+    // Update river logic here (pathfinding / erosion etc.)
+    // Also update visibility of debug entities so nodes/connections are shown
+    // or hidden depending on the player's position.
+    updateDebugEntityVisibility();
 }
 
 void RiverGenerator::updateDebugEntityVisibility() {
@@ -191,6 +215,7 @@ void RiverGenerator::addNodesForChunk(Chunk* chunk) {
     }
     
     // 1. Create nodes for this chunk
+    std::vector<GridKey> newKeys;
     for (int offsetX = 0; offsetX < chunkSize; ++offsetX) {
         for (int offsetZ = 0; offsetZ < chunkSize; ++offsetZ) {
             // Calculate grid key first from chunk position to avoid floating point precision issues
@@ -209,7 +234,8 @@ void RiverGenerator::addNodesForChunk(Chunk* chunk) {
                 
                 // Add debug entity for node
                 #ifdef SHOW_DEBUG_NODES
-                uint32_t id = DYNAMIC_NODE_ID_BASE + ((uint32_t(gridKey.first) & 0xFFFFu) << 16) | (uint32_t(gridKey.second) & 0xFFFFu);
+                // Unique monotonic id for debug entity
+                uint32_t id = m_nextDebugId++;
                 
                 float worldX = nodePosition.x;
                 float worldZ = nodePosition.y;
@@ -221,8 +247,12 @@ void RiverGenerator::addNodesForChunk(Chunk* chunk) {
                     HgLogger::logMsg("[RiverGenerator] Warning: No chunk found for node at (%.2f, %.2f)", worldX, worldZ);
                 }
                 
-                glm::vec3 debugPos(worldX, terrainY, worldZ);
-                DebugEntity* debugEntity = new DebugEntity(id, debug_Box, debugPos);
+                // Raise debug node slightly above terrain and use brighter red
+                const float NODE_DEBUG_ELEVATION = 0.05f;
+                glm::vec3 debugPos(worldX, terrainY + NODE_DEBUG_ELEVATION, worldZ);
+                glm::vec3 nodeDebugColor(1.0f, 0.2f, 0.2f);
+
+                DebugEntity* debugEntity = new DebugEntity(id, debug_Box, debugPos, nodeDebugColor);
                 debugEntity->setScale(glm::vec3(NODE_DEBUG_SCALE));
                 
                 // Set visibility based on distance from player
@@ -233,6 +263,7 @@ void RiverGenerator::addNodesForChunk(Chunk* chunk) {
                 m_terrainGenerator->m_parent->addChild(debugEntity);
                 m_nodeDebugEntities[gridKey] = debugEntity;
                 #endif
+                    newKeys.push_back(gridKey);
             }
         }
     }
@@ -245,6 +276,54 @@ void RiverGenerator::addNodesForChunk(Chunk* chunk) {
             Node* node = m_grid[gridKey];
             
             connectNodeToNeighbors(node, gridKey);
+        }
+    }
+
+    // Ensure existing neighboring nodes point to newly added nodes when appropriate
+    for (const GridKey& newKey : newKeys) {
+        Node* newNode = m_grid[newKey];
+        const glm::vec2& newPos = newNode->getPosition();
+        float newHeight = getTerrainHeight(newPos);
+
+        for (int dir = 0; dir < NEIGHBOR_COUNT; ++dir) {
+            GridKey neighborKey = {newKey.first + NEIGHBOR_OFFSETS_X[dir], newKey.second + NEIGHBOR_OFFSETS_Y[dir]};
+            auto it = m_grid.find(neighborKey);
+            if (it == m_grid.end()) continue;
+            Node* neighbor = it->second;
+            // Skip if neighbor is the new node itself
+            if (neighbor == newNode) continue;
+
+            float neighborHeight = getTerrainHeight(neighbor->getPosition());
+            // If neighbor is higher, it should have a connection to this new (downhill)
+            if (neighborHeight > newHeight) {
+                // Check if such a connection already exists
+                bool exists = false;
+                for (Connection* c : neighbor->getConnections()) {
+                    if (c->targetNode == newNode) { exists = true; break; }
+                }
+                if (!exists) {
+                    float weight = neighborHeight - newHeight;
+                    Connection* conn = new Connection{newNode, weight};
+                    neighbor->addConnection(conn);
+
+                    // Add debug entity for this connection
+                    #ifdef SHOW_DEBUG_CONNECTIONS
+                    // Only create debug entity for one direction key ordering
+                    if (neighborKey.first < newKey.first || (neighborKey.first == newKey.first && neighborKey.second < newKey.second)) {
+                        uint32_t connId = m_nextDebugId++;
+                        glm::vec2 mid2d = (neighbor->getPosition() + newPos) * 0.5f * 0.5f; // close to start
+                        glm::vec3 mid3d(mid2d.x, neighborHeight, mid2d.y);
+                        glm::vec3 connDebugColor(1.0f, 1.0f, 0.0f);
+                        DebugEntity* debugConn = new DebugEntity(connId, debug_Box, mid3d, connDebugColor);
+                        debugConn->setScale(glm::vec3(CONNECTION_DEBUG_SCALE));
+                        glm::vec2 playerPos = getPlayerPosition2D();
+                        debugConn->setRenderMesh(isWithinDebugRadius(neighbor->getPosition(), playerPos));
+                        m_terrainGenerator->m_parent->addChild(debugConn);
+                        m_connectionDebugEntities[{neighborKey, newKey}] = debugConn;
+                    }
+                    #endif
+                }
+            }
         }
     }
 }
@@ -324,29 +403,33 @@ void RiverGenerator::removeNodesForChunk(Chunk* chunk) {
     }
     
     // Remove debug entities for connections
-    for (Node* node : nodesToRemove) {
-        const glm::vec2& nodePos = node->getPosition();
-        int gridX = static_cast<int>(nodePos.x);
-        int gridZ = static_cast<int>(nodePos.y);
+    // Need to check all connection keys where either node is being removed
+    std::vector<ConnectionKey> connKeysToRemove;
+    for (auto& [connKey, debugEntity] : m_connectionDebugEntities) {
+        const GridKey& key1 = connKey.first;
+        const GridKey& key2 = connKey.second;
         
-        for (int dir = 0; dir < NEIGHBOR_COUNT; ++dir) {
-            int neighborX = gridX + NEIGHBOR_OFFSETS_X[dir];
-            int neighborZ = gridZ + NEIGHBOR_OFFSETS_Y[dir];
-            
-            ConnectionKey connKey1 = {{gridX, gridZ}, {neighborX, neighborZ}};
-            auto connIt = m_connectionDebugEntities.find(connKey1);
-            if (connIt != m_connectionDebugEntities.end()) {
-                connIt->second->markForDestruction();
-                m_connectionDebugEntities.erase(connIt);
-            }
-            
-            // Also check the reverse direction to ensure both ends are cleaned up
-            ConnectionKey connKey2 = {{neighborX, neighborZ}, {gridX, gridZ}};
-            connIt = m_connectionDebugEntities.find(connKey2);
-            if (connIt != m_connectionDebugEntities.end()) {
-                connIt->second->markForDestruction();
-                m_connectionDebugEntities.erase(connIt);
-            }
+        // Check if either endpoint of the connection is being removed
+        auto it1 = std::find_if(nodesToRemove.begin(), nodesToRemove.end(), [&](Node* node) {
+            const glm::vec2& pos = node->getPosition();
+            return key1.first == static_cast<int>(pos.x) && key1.second == static_cast<int>(pos.y);
+        });
+        
+        auto it2 = std::find_if(nodesToRemove.begin(), nodesToRemove.end(), [&](Node* node) {
+            const glm::vec2& pos = node->getPosition();
+            return key2.first == static_cast<int>(pos.x) && key2.second == static_cast<int>(pos.y);
+        });
+        
+        if (it1 != nodesToRemove.end() || it2 != nodesToRemove.end()) {
+            connKeysToRemove.push_back(connKey);
+        }
+    }
+    
+    for (const ConnectionKey& connKey : connKeysToRemove) {
+        auto it = m_connectionDebugEntities.find(connKey);
+        if (it != m_connectionDebugEntities.end()) {
+            it->second->markForDestruction();
+            m_connectionDebugEntities.erase(it);
         }
     }
 }
@@ -423,14 +506,14 @@ void RiverGenerator::connectNodeToNeighbors(Node* node, const GridKey& gridKey) 
                 // Add debug entity for connection (only one direction to avoid duplicates)
                 #ifdef SHOW_DEBUG_CONNECTIONS
                 if (gridKey.first < neighborX || (gridKey.first == neighborX && gridKey.second < neighborZ)) {
-                    uint32_t connId = CONNECTION_ID_OFFSET + 
-                                     (static_cast<uint16_t>(gridKey.first) << 16 | 
-                                      static_cast<uint16_t>(gridKey.second));
+                    // unique debug id for connection
+                    uint32_t connId = m_nextDebugId++;
                     
                     glm::vec2 debugPos2D = nodePosition + (neighborPosition - nodePosition) * 0.25f; // 25% from start node
                     glm::vec3 debugPos3D(debugPos2D.x, nodeHeight, debugPos2D.y);
-                    
-                    DebugEntity* debugConn = new DebugEntity(connId, debug_Box, debugPos3D);
+                    // Yellow for connection debug entities (normalized)
+                    glm::vec3 connDebugColor(1.0f, 1.0f, 0.0f);
+                    DebugEntity* debugConn = new DebugEntity(connId, debug_Box, debugPos3D, connDebugColor);
                     debugConn->setScale(glm::vec3(CONNECTION_DEBUG_SCALE));
                     
                     // Set visibility based on distance from player
@@ -450,8 +533,9 @@ void RiverGenerator::connectNodeToNeighbors(Node* node, const GridKey& gridKey) 
 }
 
 bool RiverGenerator::shouldConnectNodes(float nodeHeight, float neighborHeight) const {
-    // Rivers flow downhill, so only connect when neighbor is lower
-    return neighborHeight < nodeHeight;
+    // Rivers flow downhill; also allow connections on flat terrain
+    // so connect when neighbor is lower or equal in height
+    return neighborHeight <= nodeHeight;
 }
 
 float RiverGenerator::calculateConnectionWeight(float nodeHeight, float neighborHeight) const {
