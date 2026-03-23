@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 
 namespace io{
     class Keyboard{
@@ -144,6 +145,7 @@ namespace io{
             Keyboard();
             virtual ~Keyboard();
             int* m_keys;
+            std::mutex m_keysMutex;
 
             enum State{
                 UNKNOWN = -1,

@@ -17,14 +17,22 @@ Keyboard::~Keyboard(){
 }
 
 bool Keyboard::isKeyDown(int key){
+    std::lock_guard<std::mutex> lock(m_keysMutex);
     return (m_keys[key] == PRESS || m_keys[key] == REPEAT);
 }
 
 bool Keyboard::getKeyPressed(int key){
-    return m_keys[key] == PRESS;
+    std::lock_guard<std::mutex> lock(m_keysMutex);
+    if (m_keys[key] == PRESS) {
+        m_keys[key] = REPEAT;  // Consume the key press
+        return true;
+    }
+    return false;
 }
 
 void Keyboard::setKey(int key, int action){
+    std::lock_guard<std::mutex> lock(m_keysMutex);
+    
     if (key > KEY_LAST || key < 0) {
         HgLogger::logError("Key %d is out of range!", key);
         return;

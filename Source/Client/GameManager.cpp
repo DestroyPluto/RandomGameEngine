@@ -19,8 +19,6 @@ GameManager::GameManager(std::shared_ptr<core::Config> config, RenderingPlugin* 
             if(success != HgError::eSuccess){
                 HgLogger::logError("Failed to load Scene! aborting");
             }
-
-
 }
 
 void GameManager::update(){
@@ -41,21 +39,28 @@ void GameManager::updatePlaying() {
         currentScene->update(m_renderingPlugin);
 
     //make sure we can exit the game lol
-    if (Keyboard::getInstance()->isKeyDown(Keyboard::KEY_ESCAPE)) {
+    if (Keyboard::getInstance()->getKeyPressed(Keyboard::KEY_ESCAPE)) {
         changeState(ePaused);
     }
 }
 
 void GameManager::updatePaused() {
-//nothing just yet
+
     if (Keyboard::getInstance()->getKeyPressed(Keyboard::KEY_Q)) {
         m_shouldEnd = true;
     }
+    //make sure we can exit the game lol
+    if (Keyboard::getInstance()->getKeyPressed(Keyboard::KEY_ESCAPE)) {
+        changeState(ePlaying);
+    }
+
 }
 
 void GameManager::changeState(GameState newState) {
     m_currentState = newState;
     if (newState == ePaused) {
         HgLogger::logMsg("Game Paused. Press Q to quit.");
-   }
+    }else if (newState == ePlaying) {
+        HgLogger::logMsg("Game Resumed.");
+    }
 }

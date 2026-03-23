@@ -23,5 +23,6 @@ namespace client{
             void changeState(GameState newState);
             bool m_shouldEnd = false;
             core::RenderingPlugin* m_renderingPlugin;
+
     };
 }
