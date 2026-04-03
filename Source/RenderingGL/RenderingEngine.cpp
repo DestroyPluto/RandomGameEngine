@@ -148,13 +148,18 @@ void RenderingEngine::renderloop(){
             }
 
             currentShader->bind(); //TODO: should only do this once instead of every command
-            if(rc->second.getKey() < 1){
-                //m_basicShader->setProjectionMatrix(m_camera->getOrtho());
-                currentShader->setProjectionMatrix(glm::mat4(1.0));
+            if(rc->second.getKey() == core::eUI){
+                // UI layer uses orthographic projection
+                currentShader->setProjectionMatrix(m_camera->getOrtho());
                 currentShader->setViewMatrix(glm::mat4(1.0));
-            }else{
+            }else if(rc->second.getKey() == core::eWorld){
+                // World layer uses perspective projection
                 currentShader->setProjectionMatrix(m_camera->getPerspective());
                 currentShader->setViewMatrix(m_camera->getView());
+            }else{
+                // Default to identity for anything else
+                currentShader->setProjectionMatrix(glm::mat4(1.0));
+                currentShader->setViewMatrix(glm::mat4(1.0));
             }
             rc->second.execute(currentShader);
         }

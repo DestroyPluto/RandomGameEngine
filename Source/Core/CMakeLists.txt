@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 3.19)
 
 project(Core)
 
-file(GLOB CORE_SOURCES "*.cpp")
+file(GLOB CORE_SOURCES "*.cpp" "UI/*.cpp")
 
 add_library(Core STATIC ${CORE_SOURCES})
 
 target_include_directories(Core
 	PUBLIC
 		${CMAKE_SOURCE_DIR}/Include/Core
+		${CMAKE_SOURCE_DIR}/Include/Core/UI
 		${CMAKE_SOURCE_DIR}/Include/Math
 		${CMAKE_SOURCE_DIR}/Include/IO
 )

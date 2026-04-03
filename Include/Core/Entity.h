@@ -73,7 +73,7 @@ class Entity{
 
         bool shouldDestroy() { return m_shouldDestroy; }
         void markForDestruction() { m_shouldDestroy = true; }
-
+        void unmarkForDestruction() { m_shouldDestroy = false; }
         virtual ~Entity();
 
     protected:

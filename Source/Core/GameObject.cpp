@@ -7,8 +7,10 @@ using namespace io;
 
 GameObject::GameObject(uint32_t id, Behaviour* behaviour) : Entity(id){
    m_behaviour = behaviour;
-   m_behaviour->setParent(this);
-   m_behaviour->initialize();
+   if (m_behaviour) {
+       m_behaviour->setParent(this);
+       m_behaviour->initialize();
+   }
 }
 
 GameObject::GameObject(uint32_t id, Behaviour* behaviour, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) : Entity(id) {
@@ -17,17 +19,22 @@ GameObject::GameObject(uint32_t id, Behaviour* behaviour, glm::vec3 position, gl
     setScale(scale);
 
     m_behaviour = behaviour;
-    m_behaviour->setParent(this);
-    m_behaviour->initialize();
+    if (m_behaviour) {
+        m_behaviour->setParent(this);
+        m_behaviour->initialize();
+    }
 }
 
 void GameObject::onUpdate(){
-    m_behaviour->update();
-    
+    if (m_behaviour) {
+        m_behaviour->update();
+    }
 }
 
 void GameObject::onClick(){
-    m_behaviour->onClick();
+    if (m_behaviour) {
+        m_behaviour->onClick();
+    }
 }
 
 void GameObject::onCollision(){
@@ -43,5 +50,7 @@ void GameObject::onCollision(){
 
 
 GameObject::~GameObject(){
-    delete m_behaviour;
+    if (m_behaviour) {
+        delete m_behaviour;
+    }
 }

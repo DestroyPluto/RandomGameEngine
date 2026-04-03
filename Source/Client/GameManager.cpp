@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 #include "HgLogger.h"
 #include "Keyboard.h"
+#include <vector>
 
 using namespace client;
 using namespace core;
@@ -16,9 +17,19 @@ GameManager::GameManager(std::shared_ptr<core::Config> config, RenderingPlugin* 
     std::string scenePath = config->getOption(CONFIG_STARTING_SCENE_FILE_PATH, "Project/SceneOne.json");
     HgError success = SceneManager::getInstance()->loadScene(scenePath);
 
-            if(success != HgError::eSuccess){
-                HgLogger::logError("Failed to load Scene! aborting");
-            }
+    if(success != HgError::eSuccess){
+        HgLogger::logError("Failed to load Scene! aborting");
+    }
+
+    m_pauseButton = new Button(m_nextEntityId++, glm::vec3(400.0f, 300.0f, 0.0f), glm::vec3(100.0f, 100.0f, 1.0f), [this]() {
+        if (m_currentState == ePlaying) {
+            changeState(ePaused);
+        } else {
+            changeState(ePlaying);
+        }
+        });
+    m_pauseButton->setText("Resume");
+    
 }
 
 void GameManager::update(){
@@ -53,14 +64,20 @@ void GameManager::updatePaused() {
     if (Keyboard::getInstance()->getKeyPressed(Keyboard::KEY_ESCAPE)) {
         changeState(ePlaying);
     }
-
+    
+    SceneManager::getInstance()->getCurrentScene()->updateUI(m_renderingPlugin);
 }
 
 void GameManager::changeState(GameState newState) {
     m_currentState = newState;
     if (newState == ePaused) {
         HgLogger::logMsg("Game Paused. Press Q to quit.");
+        SceneManager::getInstance()->getCurrentScene()->AddUIEntity(m_pauseButton);
+        m_pauseButton->unmarkForDestruction();
+        m_pauseButton->setDirty(true);
+
     }else if (newState == ePlaying) {
         HgLogger::logMsg("Game Resumed.");
+        m_pauseButton->markForDestruction();
     }
 }

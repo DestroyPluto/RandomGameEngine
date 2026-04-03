@@ -2,6 +2,7 @@
 #include "Config.h"
 #include <memory>
 #include "RenderingPlugin.h"
+#include "Core/UI/Button.h"
 
 namespace client{
     class GameManager{
@@ -23,6 +24,8 @@ namespace client{
             void changeState(GameState newState);
             bool m_shouldEnd = false;
             core::RenderingPlugin* m_renderingPlugin;
+            core::Button* m_pauseButton = nullptr;
+            uint32_t m_nextEntityId = 1000;
 
     };
 }

@@ -2,6 +2,7 @@
 #include "Mouse.h"
 #include "Config.h"
 #include "PNGLoader.h"
+#include <algorithm>
 
 using namespace core;
 using namespace io;
@@ -69,6 +70,33 @@ void Scene::updateEntity(Entity* ent, double mouseX, double mouseY){
 
 }
 
+void Scene::updateEntityUI(Entity* ent, double mouseX, double mouseY) {
+    ent->onUpdate();
+
+    for (Entity* children : ent->getChildren()) {
+        updateEntityUI(children, mouseX, mouseY);
+    }
+
+    if (ent->shouldDestroy()) {
+        m_UIDestroyedEntities.push_back(ent->getId());
+        //ent->getParent()->removeChild(ent);
+        //delete ent;
+        return;
+    }
+
+    if (!ent->getMesh()) {
+        return;
+    }
+
+    if (ent->isDirty()) {
+        m_UIDirtyEnts.push_back(ent);
+    }
+
+    if (ent->intersects(mouseX, mouseY, 0)) {
+        ent->onCollision();
+    }
+}
+
 void Scene::update(RenderingPlugin* engine){
     m_dirtyEnts.clear();
     m_destroyedEntities.clear();
@@ -86,5 +114,32 @@ void Scene::update(RenderingPlugin* engine){
 
     if (m_destroyedEntities.size() > 0) {
         engine->destroyEntities(m_destroyedEntities);
+    }
+
+    updateUI(engine);
+}
+
+
+void Scene::updateUI(RenderingPlugin* engine) {
+    m_UIDirtyEnts.clear();
+    m_UIDestroyedEntities.clear();
+
+    double mX, mY;
+    Mouse::getInstance()->getScreenPos(mX, mY);
+    const float screenWidth = 800.0f; //TODO: get this from the rendering plugin config or something
+    const float screenHeight = 600.0f; //TODO: get this from the rendering plugin config or something
+
+    mX = (mX * (screenWidth/2.0)) + (screenWidth/2.0);
+    mY = (mY * (screenHeight/2.0)) + (screenHeight/2.0);
+    for (Entity* e : m_UIEntities) {
+        updateEntityUI(e, mX, mY); //TODO: MAGIC NUMBERS
+    }
+
+    if (m_UIDirtyEnts.size() > 0) {
+        engine->setDirtyEntities(m_UIDirtyEnts);
+    }
+
+    if (m_UIDestroyedEntities.size() > 0) {
+        engine->destroyEntities(m_UIDestroyedEntities);
     }
 }
