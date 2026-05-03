@@ -21,7 +21,7 @@ class Entity{
         void setMesh(Mesh* mesh){m_mesh = mesh;}
         Mesh* getMesh(){return m_mesh;}
         bool isDirty(){return m_isDirty;}
-        void setDirty(bool isDirty){m_isDirty = isDirty;}
+        void setDirty(bool isDirty) { m_isDirty = isDirty; for (Entity* child : m_children) { child->setDirty(m_isDirty); } }
         uint32_t getId(){return m_id;}
         
         hgLayer getLayer(){return m_layer;}
@@ -55,14 +55,9 @@ class Entity{
         virtual void onUpdate();
         virtual void onClick();
 
-        void addChild(Entity* child) {
-            m_children.push_back(child);
-            child->setParent(this);
-        }
-        void removeChild(Entity* child) {
-            m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
-            child->setParent(nullptr);
-        }
+        void addChild(Entity* child);
+
+        void removeChild(Entity* child);
 
         const std::vector<Entity*> getChildren() { return m_children; }
         void setParent(Entity* parent) { m_parent = parent; }
@@ -72,8 +67,8 @@ class Entity{
         void setRenderMesh(bool render) { m_renderMesh = render; setDirty(true); }
 
         bool shouldDestroy() { return m_shouldDestroy; }
-        void markForDestruction() { m_shouldDestroy = true; }
-        void unmarkForDestruction() { m_shouldDestroy = false; }
+        void markForDestruction(bool shouldDestroy);
+
         virtual ~Entity();
 
     protected:

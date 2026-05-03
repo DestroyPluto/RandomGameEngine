@@ -47,3 +47,4 @@ staticAnalysis.cppcheck
 /.vs/CopilotSnapshots/*
 /.vs/PracticeProject.slnx/config
 /.vs/CMakeWorkspaceSettings.json
+/.vs/PracticeProject/copilot-chat/*

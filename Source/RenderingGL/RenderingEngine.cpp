@@ -83,7 +83,7 @@ HgError RenderingEngine::initPlugin() {
         glfwTerminate();
         return HgError::eFailure;
     }
-        glfwMakeContextCurrent(m_window);
+    glfwMakeContextCurrent(m_window);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
         return HgError::eFailure;
@@ -119,7 +119,7 @@ HgError RenderingEngine::initPlugin() {
 
     m_isInitialized = true;
     renderloop();
-
+    
     return HgError::eSuccess;
 }
 
@@ -188,6 +188,7 @@ void RenderingEngine::renderloop(){
 
     }
     //make sure to tell the main thread we are exiting
+     //TODO: this is no longer correct - escape does not mean we should exit, it just means we should pause. need a better way to signal the main thread that we are exiting.
     m_keyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS);
 }
 

@@ -121,7 +121,7 @@ void TerrainGenerator::update(){
             if (getDistanceBetweenTwoPoints2D(chunkPos, m_centerChunkCoords) > m_loadRadius) {
                 //if the chunk is outside the load radius, we can safely delete it.
                 m_loadedChunks.erase(std::remove(m_loadedChunks.begin(), m_loadedChunks.end(), chunk), m_loadedChunks.end());
-                chunk->markForDestruction();
+                chunk->markForDestruction(true);
             }
         }
     }

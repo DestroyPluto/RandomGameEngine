@@ -58,3 +58,27 @@ void Entity::onUpdate(){
 void Entity::onClick(){
 
 }
+
+void Entity::addChild(Entity* child) {
+    m_children.push_back(child);
+    child->setParent(this);
+    child->setDirty(true);
+    //child transforms should be relative to the parent.
+    child->setPosition(child->getPosition() + m_position);
+    child->setRotation(child->getRotation() + m_rotation);
+    child->setScale(child->getScale() * m_scale); 
+}
+
+void Entity::removeChild(Entity* child) {
+    m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
+    child->setParent(nullptr);
+    child->setDirty(true);
+}
+
+void Entity::markForDestruction(bool shouldDestroy) {
+    m_shouldDestroy = shouldDestroy;
+    for (Entity* child : m_children)
+    {
+        child->markForDestruction(shouldDestroy);
+    }
+}

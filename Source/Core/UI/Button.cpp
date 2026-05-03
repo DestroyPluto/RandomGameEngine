@@ -3,29 +3,33 @@
 namespace core {
     
     Button::Button(uint32_t id)
-        : GameObject(id, nullptr), m_text(""), m_onClickCallback(nullptr), m_displayText(new DisplayText("",id + 1000))
+        : GameObject(id, nullptr), m_text("test"), m_onClickCallback(nullptr), m_displayText(new DisplayText("",id + 1000))
     {
         // The mesh is already initialized to a 2D square in Entity constructor
         // Just set the layer to UI
         setLayer(eUI);
+        addChild(m_displayText);
     }
 
     Button::Button(uint32_t id, glm::vec3 position, glm::vec3 scale)
-        : GameObject(id, nullptr, position, glm::vec3(0.0f), scale), m_text(""), m_onClickCallback(nullptr), m_displayText(new DisplayText("", id + 1000))
+        : GameObject(id, nullptr, position, glm::vec3(0.0f), scale), m_text("test"), m_onClickCallback(nullptr), m_displayText(new DisplayText("test", id + 1500))
     {
         setLayer(eUI);
+        addChild(m_displayText);
     }
 
     Button::Button(uint32_t id, std::function<void()> onClickCallback)
-        : GameObject(id, nullptr), m_text(""), m_onClickCallback(onClickCallback), m_displayText(new DisplayText("", id + 1000))
+        : GameObject(id, nullptr), m_text(""), m_onClickCallback(onClickCallback), m_displayText(new DisplayText("test", id + 1500))
     {
         setLayer(eUI);
+        addChild(m_displayText);
     }
 
     Button::Button(uint32_t id, glm::vec3 position, glm::vec3 scale, std::function<void()> onClickCallback)
-        : GameObject(id, nullptr, position, glm::vec3(0.0f), scale), m_text(""), m_onClickCallback(onClickCallback), m_displayText(new DisplayText("", id + 1000))
+        : GameObject(id, nullptr, position, glm::vec3(0.0f), scale), m_text(""), m_onClickCallback(onClickCallback), m_displayText(new DisplayText("", id + 1500))
     {
         setLayer(eUI);
+        addChild(m_displayText);
     }
 
     Button::~Button()

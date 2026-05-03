@@ -73,11 +73,12 @@ void GameManager::changeState(GameState newState) {
     if (newState == ePaused) {
         HgLogger::logMsg("Game Paused. Press Q to quit.");
         SceneManager::getInstance()->getCurrentScene()->AddUIEntity(m_pauseButton);
-        m_pauseButton->unmarkForDestruction();
+        m_pauseButton->markForDestruction(false);
         m_pauseButton->setDirty(true);
 
     }else if (newState == ePlaying) {
         HgLogger::logMsg("Game Resumed.");
-        m_pauseButton->markForDestruction();
+        m_pauseButton->markForDestruction(true);
+        m_pauseButton->setDirty(true);
     }
 }
