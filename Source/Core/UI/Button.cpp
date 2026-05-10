@@ -3,7 +3,7 @@
 namespace core {
     
     Button::Button(uint32_t id)
-        : GameObject(id, nullptr), m_text("test"), m_onClickCallback(nullptr), m_displayText(new DisplayText("",id + 1000))
+        : GameObject(id, nullptr), m_text(""), m_onClickCallback(nullptr), m_displayText(new DisplayText("",id + 1000))
     {
         // The mesh is already initialized to a 2D square in Entity constructor
         // Just set the layer to UI
@@ -12,7 +12,7 @@ namespace core {
     }
 
     Button::Button(uint32_t id, glm::vec3 position, glm::vec3 scale)
-        : GameObject(id, nullptr, position, glm::vec3(0.0f), scale), m_text("test"), m_onClickCallback(nullptr), m_displayText(new DisplayText("test", id + 1500))
+        : GameObject(id, nullptr, position, glm::vec3(0.0f), scale), m_text(""), m_onClickCallback(nullptr), m_displayText(new DisplayText("", id + 1500))
     {
         setLayer(eUI);
         addChild(m_displayText);
@@ -68,11 +68,35 @@ namespace core {
     {
         m_text = text;
         m_displayText->setText(text); // Update the display text if it exists
+        calculateSize();
     }
 
     std::string Button::getText() const
     {
         return m_text;
+    }
+
+    void Button::calculateSize()
+    {
+        //for now, just use magic numbers, and adjust until we get something "good enough"
+        uint8_t charheight = 48;
+        uint8_t padding = 10;
+        float widthRatio = 0.62f; //I made this up lol.
+        float charWidth = charheight * widthRatio;
+
+        float finalWidth = m_text.length() * charWidth; 
+
+        //make sure the text is centered
+        glm::vec3 textPosition = m_displayText->getPosition();
+        
+        //4.0 just looks better for some reason.
+        textPosition.y -= charheight / 2.0f;
+        textPosition.y += padding / 2.0f;
+        
+        textPosition.x -= finalWidth / 2.0f; //center the text horizontally
+        m_displayText->setPosition(textPosition);
+
+        this->setScale(glm::vec3(finalWidth + (padding), charheight + padding, 1));
     }
 
 }

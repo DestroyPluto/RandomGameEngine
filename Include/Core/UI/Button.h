@@ -24,5 +24,7 @@ namespace core {
         std::string m_text;
         std::function<void()> m_onClickCallback;
         DisplayText* m_displayText; // Optional: for rendering the button's text
+    private:
+        void calculateSize();
     };
 }

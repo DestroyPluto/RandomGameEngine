@@ -29,6 +29,12 @@ GameManager::GameManager(std::shared_ptr<core::Config> config, RenderingPlugin* 
         }
         });
     m_pauseButton->setText("Resume");
+
+    m_quitButton = new Button(m_nextEntityId++, glm::vec3(400.0f, 200.0f, 0.0f), glm::vec3(100.0f, 100.0f, 1.0f), [this]() {
+        m_shouldEnd = true;
+    });
+
+    m_quitButton->setText("Quit");
     
 }
 
@@ -73,12 +79,17 @@ void GameManager::changeState(GameState newState) {
     if (newState == ePaused) {
         HgLogger::logMsg("Game Paused. Press Q to quit.");
         SceneManager::getInstance()->getCurrentScene()->AddUIEntity(m_pauseButton);
+        SceneManager::getInstance()->getCurrentScene()->AddUIEntity(m_quitButton);
         m_pauseButton->markForDestruction(false);
+        m_quitButton->markForDestruction(false);
         m_pauseButton->setDirty(true);
+        m_quitButton->setDirty(true);
 
     }else if (newState == ePlaying) {
         HgLogger::logMsg("Game Resumed.");
         m_pauseButton->markForDestruction(true);
+        m_quitButton->markForDestruction(true);
         m_pauseButton->setDirty(true);
+        m_quitButton->setDirty(true);
     }
 }

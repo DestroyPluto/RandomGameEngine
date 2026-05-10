@@ -25,6 +25,7 @@ namespace client{
             bool m_shouldEnd = false;
             core::RenderingPlugin* m_renderingPlugin;
             core::Button* m_pauseButton = nullptr;
+            core::Button* m_quitButton = nullptr;
             uint32_t m_nextEntityId = 1000;
 
     };
