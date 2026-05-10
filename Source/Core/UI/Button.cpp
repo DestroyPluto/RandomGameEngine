@@ -1,12 +1,11 @@
 #include "Button.h"
 #include "Mesh.h"
+
 namespace core {
     
     Button::Button(uint32_t id)
         : GameObject(id, nullptr), m_text(""), m_onClickCallback(nullptr), m_displayText(new DisplayText("",id + 1000))
     {
-        // The mesh is already initialized to a 2D square in Entity constructor
-        // Just set the layer to UI
         setLayer(eUI);
         addChild(m_displayText);
     }

@@ -77,6 +77,7 @@ void Entity::removeChild(Entity* child) {
 
 void Entity::markForDestruction(bool shouldDestroy) {
     m_shouldDestroy = shouldDestroy;
+    setDirty(true);
     for (Entity* child : m_children)
     {
         child->markForDestruction(shouldDestroy);

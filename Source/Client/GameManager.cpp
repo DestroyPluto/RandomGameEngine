@@ -21,21 +21,26 @@ GameManager::GameManager(std::shared_ptr<core::Config> config, RenderingPlugin* 
         HgLogger::logError("Failed to load Scene! aborting");
     }
 
-    m_pauseButton = new Button(m_nextEntityId++, glm::vec3(400.0f, 300.0f, 0.0f), glm::vec3(100.0f, 100.0f, 1.0f), [this]() {
+    m_PauseMenu = new Menu(SceneManager::getInstance()->getCurrentScene());
+
+    Button* PauseButton = new Button(m_nextEntityId++, glm::vec3(400.0f, 300.0f, 0.0f), glm::vec3(100.0f, 100.0f, 1.0f), [this]() {
         if (m_currentState == ePlaying) {
             changeState(ePaused);
         } else {
             changeState(ePlaying);
         }
         });
-    m_pauseButton->setText("Resume");
 
-    m_quitButton = new Button(m_nextEntityId++, glm::vec3(400.0f, 200.0f, 0.0f), glm::vec3(100.0f, 100.0f, 1.0f), [this]() {
+    PauseButton->setText("Resume");
+
+    Button* quitButton = new Button(m_nextEntityId++, glm::vec3(400.0f, 200.0f, 0.0f), glm::vec3(100.0f, 100.0f, 1.0f), [this]() {
         m_shouldEnd = true;
     });
 
-    m_quitButton->setText("Quit");
+    quitButton->setText("Quit");
     
+    m_PauseMenu->addButton(PauseButton);
+    m_PauseMenu->addButton(quitButton);
 }
 
 void GameManager::update(){
@@ -78,18 +83,11 @@ void GameManager::changeState(GameState newState) {
     m_currentState = newState;
     if (newState == ePaused) {
         HgLogger::logMsg("Game Paused. Press Q to quit.");
-        SceneManager::getInstance()->getCurrentScene()->AddUIEntity(m_pauseButton);
-        SceneManager::getInstance()->getCurrentScene()->AddUIEntity(m_quitButton);
-        m_pauseButton->markForDestruction(false);
-        m_quitButton->markForDestruction(false);
-        m_pauseButton->setDirty(true);
-        m_quitButton->setDirty(true);
 
-    }else if (newState == ePlaying) {
+        m_PauseMenu->displayMenu(true);
+
+    } else if (newState == ePlaying) {
         HgLogger::logMsg("Game Resumed.");
-        m_pauseButton->markForDestruction(true);
-        m_quitButton->markForDestruction(true);
-        m_pauseButton->setDirty(true);
-        m_quitButton->setDirty(true);
+        m_PauseMenu->displayMenu(false);
     }
 }
