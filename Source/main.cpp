@@ -83,6 +83,10 @@ class Game{
 
                 game.update();
 
+                //exit gracefully if the rendering thread signals that it is exiting
+                if (Keyboard::getInstance()->getKeyPressed(Keyboard::KEY_EXIT)) {
+                    shouldEnd = true;
+                }
 
             }
 

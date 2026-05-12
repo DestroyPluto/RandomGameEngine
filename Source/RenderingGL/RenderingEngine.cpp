@@ -188,8 +188,8 @@ void RenderingEngine::renderloop(){
 
     }
     //make sure to tell the main thread we are exiting
-     //TODO: this is no longer correct - escape does not mean we should exit, it just means we should pause. need a better way to signal the main thread that we are exiting.
-    m_keyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS);
+     //349 is a custom keycode that signals the main thread that the rendering thread is exiting, so that it can clean up any resources and exit gracefully.
+    m_keyCallback(349, GLFW_PRESS);
 }
 
 HgError RenderingEngine::setDirtyEntities(std::vector<Entity*>& entities){

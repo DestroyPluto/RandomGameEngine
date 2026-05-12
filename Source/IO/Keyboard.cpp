@@ -6,7 +6,7 @@ using namespace io;
 using namespace core;
 
 Keyboard::Keyboard(){
-    m_keys = (int*)calloc(KEY_LAST, sizeof(int));
+    m_keys = (int*)calloc(KEY_LAST + 1, sizeof(int));
     if(!m_keys){
         HgLogger::logError("Failed to initialize key cache!");
     }

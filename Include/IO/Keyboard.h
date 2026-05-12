@@ -138,7 +138,8 @@ namespace io{
                 KEY_RIGHT_ALT = 346,
                 KEY_RIGHT_SUPER = 347,
                 KEY_MENU = 348,
-                KEY_LAST = KEY_MENU
+                KEY_EXIT = 349,
+                KEY_LAST = KEY_EXIT
             } Key;
 
         private:
