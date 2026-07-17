@@ -6,12 +6,14 @@
 #include <vector>
 #include "Math/Noise.h"
 #include "Core/Mesh.h"
+#include "TerrainGenerator.h"
+#include "DebugEntity.h"
 
 using namespace client;
 using namespace core;
 using namespace math;
 
-Chunk::Chunk(uint32_t id, glm::vec3 pos, uint64_t seed) : Entity(id){
+Chunk::Chunk(uint32_t id, glm::vec3 pos, uint64_t seed, TerrainGenerator* terrainGenerator) : Entity(id), m_terrainGenerator(terrainGenerator) {
     //need to be sure it is initialized with a position, otherwise the noise value will be wrong.
     setPosition(pos);
     m_seed = seed;
@@ -19,6 +21,7 @@ Chunk::Chunk(uint32_t id, glm::vec3 pos, uint64_t seed) : Entity(id){
     m_BaseTerrainNoiseGenerator = Noise(m_seed);
     m_SecondaryTerrainNoiseGenerator = Noise(m_seed * 2);
     m_BiomeNoiseGenerator = Noise(m_seed * 3);
+    m_RiverNoiseGenerator = Noise(m_seed * 4);
 
     createMesh();
 }
@@ -134,7 +137,7 @@ void Chunk::createPoints(core::Mesh* mesh) {
             } else {
                 colours.push_back(Point(0.0f, 1.0f, 0.0f)); // Placeholder color (green)
             }
-
+            createRiverNodes(world_x, y,world_z); // Create river nodes for this vertex
         }
     }
     mesh->setPoints(points, false);
@@ -298,7 +301,7 @@ float Chunk::calculatePlains(float x, float z) {
     float height = (noise0 + noise1) / 1.2f; // Weighted sum
 
     // Scale to desired amplitude (e.g., 0.0 to 1.0, then scale down for gentle hills)
-    return height * 0.15f; // 0.15f controls the max height of hills
+    return height * 0.15f; 
 
 }
 
@@ -315,7 +318,7 @@ float Chunk::calculateHills(float x, float z) {
     float height = (noise0 + noise1) / 1.2f; // Weighted sum
 
     // Scale to desired amplitude (e.g., 0.0 to 1.0, then scale down for gentle hills)
-    return height; // 0.15f controls the max height of hills
+    return height;
 }
 
 float Chunk::calculateMountains(float x, float z) {
@@ -331,7 +334,7 @@ float Chunk::calculateMountains(float x, float z) {
     float height = (noise0 + noise1) / 1.2f;
     float finalHeight = std::pow(std::max(0.0f, height), 3.0f);
     // Scale up for tall, smooth mountains
-    return height * 10.0f; // 2.5f controls the max height of mountains
+    return height * 10.0f;
 }
 
 float Chunk::calculateLakes(float x, float z) {
@@ -540,6 +543,23 @@ bool Chunk::setRegionHeight(float centerWorldX, float centerWorldZ, float radius
     setDirty(true);
 
     return true;
+}
+
+void Chunk::createRiverNodes(float x, float y, float z) {
+    //first check the moisture level at this point
+    float moistureFrequency0 = 1.0f;
+
+    float moisture0 = m_BiomeNoiseGenerator.generateNoise2d(x * moistureFrequency0, z * moistureFrequency0);
+
+   //float moisture = (moisture0 + 1.0f) * 0.5f; // Map from [-1, 1] to [0, 1]
+
+    if (moisture0 >= 0.95f) {
+
+        RiverNode::eNodeType type = (getBiomeType(x, z).type != eBiomeType::Lake) ? RiverNode::Tail : RiverNode::Mouth;
+        RiverNode* newNode = new RiverNode(x, y, z, type);
+        m_terrainGenerator->addRiverNode(newNode); // Assuming TerrainGenerator has a method to add river nodes
+    }
+
 }
 
 void Chunk::onCollision(){

@@ -1,13 +1,13 @@
 #pragma once
 #include "Behaviour.h"
-#include "RiverGenerator.h"
-#include "Chunk.h"
 #include "glm/glm.hpp"
 #include <queue>
 #include <tuple>
+#include "RiverNode.h"
+#include "DebugEntity.h"
 
 namespace client {
-    class RiverGenerator; // Forward declaration
+    class Chunk;
 
     class TerrainGenerator : public core::Behaviour{
     public:
@@ -18,11 +18,11 @@ namespace client {
         }
 
        virtual ~TerrainGenerator() {
-            delete m_riverGenerator;
+            
        }
 
      void setRegionHeight(float centerWorldX, float centerWorldZ, float radius, float newY);
-
+     void addRiverNode(RiverNode* node);
 
     private:
         void createChunks();
@@ -38,8 +38,8 @@ namespace client {
         
         std::queue<std::tuple<uint32_t, glm::vec3, uint64_t>> m_pendingChunks;
         int m_chunksPerFrame = 2; // Tune this for your performance
-        RiverGenerator* m_riverGenerator;
-
-        friend class RiverGenerator;
+        std::vector<RiverNode*> m_riverNodes;
+        std::vector<client::DebugEntity*> m_debugEntities;
+        uint32_t m_nextDebugEntityId = 123456;
     };
 }

@@ -13,7 +13,6 @@ void TerrainGenerator::initialize(){
     
     m_parent->setMesh(nullptr);
     createChunks();
-    m_riverGenerator = new RiverGenerator(this);
 
 }
 
@@ -85,12 +84,9 @@ void TerrainGenerator::loadPendingChunks() {
     while (m_pendingChunks.size() > 0 && loadedThisFrame < m_chunksPerFrame) {
         auto [chunkId, chunkPos, seed] = m_pendingChunks.front();
         m_pendingChunks.pop();
-        Chunk* newChunk = new Chunk(chunkId, chunkPos, seed);
+        Chunk* newChunk = new Chunk(chunkId, chunkPos, seed, this);
         m_parent->addChild(newChunk);
         m_loadedChunks.push_back(newChunk);
-        if (m_riverGenerator) {
-            m_riverGenerator->addNodesForChunk(newChunk);
-        }
         loadedThisFrame++;
     }
 }
@@ -128,8 +124,15 @@ void TerrainGenerator::update(){
             }
         }
     }
-
-    m_riverGenerator->updateRivers();
+    //handle debug entities
+    for (DebugEntity* debugEntity : m_debugEntities) {
+        if (getDistanceBetweenTwoPoints2D(glm::vec2(debugEntity->getPosition().x, debugEntity->getPosition().z), playerPos) > m_renderRadius) {
+            debugEntity->setRenderMesh(false);
+        }
+        else {
+            debugEntity->setRenderMesh(true);
+        }
+    }
 
 }
 
@@ -191,13 +194,21 @@ void TerrainGenerator::setRegionHeight(float centerWorldX, float centerWorldZ, f
     }
 }
 
+void TerrainGenerator::addRiverNode(RiverNode* node) {
+    m_riverNodes.push_back(node);
+    DebugEntity* debugEntity = new DebugEntity(m_nextDebugEntityId++, DebugEntityType::debug_Box, glm::vec3(node->getX(), node->getY() + 0.05f, node->getZ()), glm::vec3(0.0f, 0.0f, 1.0f));
+    debugEntity->setScale(glm::vec3(0.1f));
+    m_parent->addChild(debugEntity);
+    m_debugEntities.push_back(debugEntity);
+}
+
 /**
 * TODO: rivers
 * what I'm currently thinking:
-*   - use a noise gen to determin rainfall,
-*   - then, simulate the rainfall paths downhill.
-*       - probably some sort of A*? would also need to determine the ending location
-*       - so probably need ocean nodes as well?
-*           - determine what level "sea level" is, and create ending nodes at any terrain that has this hight.
-*   - if the rainfall path is used by enough water, it becomes a river and carves out a riverbed.
+*   - have a "mouth" node, and a "tail" node
+*   - start generating at the tail (should be a high altitude point), 
+*     and generate a path to the mouth (should be a low altitude point)
+*   - probably just greedy search
+*   - river consists of multiple nodes
+*   - should probably deform the terrain... but start with just getting the paths right first.
 */
